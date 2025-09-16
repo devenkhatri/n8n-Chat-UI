@@ -4,11 +4,10 @@ import { useEffect } from 'react';
 import { 
   initPerformanceMonitoring, 
   reportPerformanceMetrics,
-  registerServiceWorker,
   preloadCriticalAssets,
   addResourceHints
 } from '../../lib/utils/performance-monitoring';
-import { registerServiceWorker as registerSW } from '../../lib/utils/asset-optimization';
+
 
 /**
  * Performance monitoring component that initializes performance tracking
@@ -24,9 +23,11 @@ export function PerformanceMonitor() {
     // Preload critical assets
     preloadCriticalAssets();
     
-    // Register service worker for caching
-    if (process.env.NODE_ENV === 'production') {
-      registerSW();
+    // Register service worker for caching (guarded)
+    if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .catch(() => {/* swallow registration errors */});
     }
     
     // Report initial metrics after a delay

@@ -102,25 +102,38 @@ const environmentConfigs: Record<string, Partial<AppConfig>> = {
     app: {
       environment: 'development',
       baseUrl: 'http://localhost:3000',
+      name: "",
+      version: ""
     },
     features: {
       enableAnalytics: false,
+      enableSound: false,
+      enableAnimations: false,
+      enableMessageGrouping: false
     },
     performance: {
       enableBundleAnalysis: true,
+      enableServiceWorker: false,
+      enableImageOptimization: false
     },
     security: {
       enableCSP: false,
       allowedOrigins: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+      enableHSTS: false
     },
   },
   staging: {
     app: {
       environment: 'staging',
       baseUrl: 'https://staging-chat.example.com',
+      name: "",
+      version: ""
     },
     features: {
       enableAnalytics: true,
+      enableSound: false,
+      enableAnimations: false,
+      enableMessageGrouping: false
     },
     analytics: {
       enabled: true,
@@ -128,15 +141,22 @@ const environmentConfigs: Record<string, Partial<AppConfig>> = {
     },
     security: {
       allowedOrigins: ['https://staging-chat.example.com'],
+      enableCSP: false,
+      enableHSTS: false
     },
   },
   production: {
     app: {
       environment: 'production',
       baseUrl: 'https://chat.example.com',
+      name: "",
+      version: ""
     },
     features: {
       enableAnalytics: true,
+      enableSound: false,
+      enableAnimations: false,
+      enableMessageGrouping: false
     },
     analytics: {
       enabled: true,
@@ -145,6 +165,7 @@ const environmentConfigs: Record<string, Partial<AppConfig>> = {
     performance: {
       enableServiceWorker: true,
       enableImageOptimization: true,
+      enableBundleAnalysis: false
     },
     security: {
       enableCSP: true,
@@ -239,29 +260,44 @@ function buildConfigFromEnv(): AppConfig {
   return mergeDeep(config, envOverrides);
 }
 
-// Deep merge utility function
-function mergeDeep(target: any, source: any): any {
-  const output = { ...target };
+// Helper type for deep partial objects
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? (T[P] extends Array<infer U> ? Array<U> : DeepPartial<T[P]>) : T[P];
+};
+
+// Type guard for non-array objects
+const isPlainObject = (item: unknown): item is Record<string, unknown> => {
+  return item !== null && typeof item === 'object' && !Array.isArray(item);
+};
+
+// Deep merge utility function with AppConfig type safety
+function mergeDeep<T extends object>(target: T, source: DeepPartial<T>): T {
+  const output = { ...target } as T;
   
-  if (isObject(target) && isObject(source)) {
-    Object.keys(source).forEach(key => {
-      if (isObject(source[key])) {
-        if (!(key in target)) {
-          Object.assign(output, { [key]: source[key] });
-        } else {
-          output[key] = mergeDeep(target[key], source[key]);
+  if (isPlainObject(target) && isPlainObject(source)) {
+    for (const key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        const sourceValue = source[key];
+        const targetValue = target[key as keyof T];
+        
+        if (isPlainObject(sourceValue) && isPlainObject(targetValue)) {
+          output[key as keyof T] = mergeDeep(
+            targetValue as Record<string, unknown>,
+            sourceValue as Record<string, unknown>
+          ) as T[keyof T];
+        } else if (sourceValue !== undefined) {
+          output[key as keyof T] = sourceValue as T[keyof T];
         }
-      } else {
-        Object.assign(output, { [key]: source[key] });
       }
-    });
+    }
   }
   
   return output;
 }
 
-function isObject(item: any): boolean {
-  return item && typeof item === 'object' && !Array.isArray(item);
+// Type guard for non-array objects (exported for testing)
+export function isObject(item: unknown): item is Record<string, unknown> {
+  return item !== null && typeof item === 'object' && !Array.isArray(item);
 }
 
 // Export the configuration

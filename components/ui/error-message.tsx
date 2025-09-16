@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { AlertTriangle, Wifi, WifiOff, RefreshCw, Home, Bug } from 'lucide-react'
-import { Button } from './button'
-import { Card } from './card'
+import { AlertTriangle, WifiOff, Bug } from 'lucide-react'
+import Button from './button'
+import Card from './card'
 import { type ErrorMessageProps } from '../../lib/types/ui'
 
 const errorIcons = {
@@ -80,7 +80,6 @@ export function ErrorMessage({
 
 // Specific error fallback components
 export function NetworkErrorFallback({ 
-  error, 
   retry 
 }: { 
   error: Error

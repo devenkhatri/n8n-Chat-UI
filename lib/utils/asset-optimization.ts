@@ -76,7 +76,7 @@ export const createLazyImage = (
         );
         
         observer.observe(img);
-      } else {
+      } else if (dataSrc) {
         // Fallback for browsers without IntersectionObserver
         img.src = dataSrc;
       }

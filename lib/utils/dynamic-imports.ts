@@ -1,18 +1,20 @@
+import React from 'react';
 import dynamic from 'next/dynamic';
-import { LoadingState } from '../../components/ui/loading-state';
+import LoadingState from '../../components/ui/loading-state';
+import type { DynamicOptionsLoadingProps } from 'next/dynamic';
 
 /**
  * Dynamic import with loading state for Next.js
  */
-export const createDynamicComponent = <T = any>(
+export const createDynamicComponent = <T extends Record<string, unknown> = Record<string, unknown>>(
   importFn: () => Promise<{ default: React.ComponentType<T> }>,
   options: {
-    loading?: React.ComponentType;
+    loading?: (props: DynamicOptionsLoadingProps) => React.ReactNode;
     ssr?: boolean;
   } = {}
 ) => {
   return dynamic(importFn, {
-    loading: options.loading || (() => <LoadingState variant="spinner" />),
+    loading: options.loading || (() => React.createElement(LoadingState, { variant: "spinner" })),
     ssr: options.ssr ?? true,
   });
 };
@@ -20,12 +22,12 @@ export const createDynamicComponent = <T = any>(
 /**
  * Dynamic import with skeleton loading
  */
-export const createDynamicComponentWithSkeleton = <T = any>(
+export const createDynamicComponentWithSkeleton = <T extends Record<string, unknown> = Record<string, unknown>>(
   importFn: () => Promise<{ default: React.ComponentType<T> }>,
   skeletonVariant: 'spinner' | 'skeleton' | 'message-skeleton' = 'skeleton'
 ) => {
   return dynamic(importFn, {
-    loading: () => <LoadingState variant={skeletonVariant} />,
+    loading: () => React.createElement(LoadingState, { variant: skeletonVariant }),
     ssr: true,
   });
 };
@@ -33,22 +35,23 @@ export const createDynamicComponentWithSkeleton = <T = any>(
 /**
  * Dynamic import for client-side only components
  */
-export const createClientOnlyComponent = <T = any>(
+export const createClientOnlyComponent = <T extends Record<string, unknown> = Record<string, unknown>>(
   importFn: () => Promise<{ default: React.ComponentType<T> }>
 ) => {
   return dynamic(importFn, {
     ssr: false,
-    loading: () => <LoadingState variant="spinner" />,
+    loading: () => React.createElement(LoadingState, { variant: "spinner" }),
   });
 };
 
 /**
  * Preload a dynamic component
  */
-export const preloadDynamicComponent = (
-  component: ReturnType<typeof dynamic>
+export const preloadDynamicComponent = <T>(
+  component: { preload?: () => Promise<{ default: React.ComponentType<T> }> }
 ) => {
-  if (typeof window !== 'undefined') {
-    component.preload();
+  if (component.preload) {
+    return component.preload();
   }
+  return Promise.resolve();
 };

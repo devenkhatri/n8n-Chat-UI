@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Button } from './button'
-import { Card } from './card'
+import Button from './button'
+import Card from './card'
 import Layout from './layout'
 import { 
   XMarkIcon,
@@ -90,7 +90,7 @@ export function UpgradePromptModal({
                 Upgrade Your Experience
               </h2>
               <p className="text-muted-foreground">
-                You've used {usedMessages} of {currentLimit} messages. Upgrade for unlimited conversations and premium features.
+                You&apos;ve used {usedMessages} of {currentLimit} messages. Upgrade for unlimited conversations and premium features.
               </p>
             </div>
             <Button

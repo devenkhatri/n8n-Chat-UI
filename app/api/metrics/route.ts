@@ -252,7 +252,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 }
 
 // Reset metrics (for testing/debugging)
-export async function DELETE(request: NextRequest): Promise<NextResponse> {
+export async function DELETE(): Promise<NextResponse> {
   // Only allow in development
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json(

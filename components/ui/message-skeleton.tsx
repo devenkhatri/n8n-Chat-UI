@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion, type Variants, cubicBezier, easeOut } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import Skeleton from './skeleton'
 
@@ -10,7 +10,7 @@ interface MessageSkeletonProps {
   lines?: number
 }
 
-const skeletonVariants = {
+const skeletonVariants: Variants = {
   hidden: { 
     opacity: 0, 
     y: 20,
@@ -22,20 +22,20 @@ const skeletonVariants = {
     scale: 1,
     transition: {
       duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94],
+      ease: cubicBezier(0.25, 0.46, 0.45, 0.94),
       staggerChildren: 0.1
     }
   }
 }
 
-const contentVariants = {
+const contentVariants: Variants = {
   hidden: { opacity: 0, y: 10 },
   visible: { 
     opacity: 1, 
     y: 0,
     transition: {
       duration: 0.3,
-      ease: "easeOut"
+      ease: easeOut
     }
   }
 }

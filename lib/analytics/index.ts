@@ -4,7 +4,7 @@
 
 export interface AnalyticsEvent {
   name: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   timestamp?: Date;
   userId?: string;
   sessionId?: string;
@@ -61,7 +61,7 @@ export class Analytics {
   /**
    * Track a user interaction or custom event
    */
-  track(eventName: string, properties?: Record<string, any>): void {
+  track(eventName: string, properties?: Record<string, unknown>): void {
     if (!this.config.enabled || Math.random() > this.config.sampleRate) {
       return;
     }
@@ -107,7 +107,7 @@ export class Analytics {
   /**
    * Track user interaction with specific UI elements
    */
-  trackInteraction(element: string, action: string, properties?: Record<string, any>): void {
+  trackInteraction(element: string, action: string, properties?: Record<string, unknown>): void {
     this.track('user_interaction', {
       element,
       action,
@@ -118,7 +118,7 @@ export class Analytics {
   /**
    * Track errors and exceptions
    */
-  trackError(error: Error, context?: Record<string, any>): void {
+  trackError(error: Error, context?: Record<string, unknown>): void {
     this.track('error', {
       message: error.message,
       stack: error.stack,
@@ -145,7 +145,7 @@ export class Analytics {
     if ('PerformanceObserver' in window) {
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1] as any;
+        const lastEntry = entries[entries.length - 1] as PerformanceEntry & { startTime: number };
         this.trackPerformance({ lcp: lastEntry.startTime });
       });
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
@@ -153,8 +153,10 @@ export class Analytics {
       // FID - First Input Delay
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry: any) => {
-          this.trackPerformance({ fid: entry.processingStart - entry.startTime });
+        entries.forEach((entry: PerformanceEntry & { processingStart?: number }) => {
+          if (entry.processingStart) {
+            this.trackPerformance({ fid: entry.processingStart - entry.startTime });
+          }
         });
       });
       fidObserver.observe({ entryTypes: ['first-input'] });
@@ -163,8 +165,8 @@ export class Analytics {
       let clsValue = 0;
       const clsObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry: any) => {
-          if (!entry.hadRecentInput) {
+        entries.forEach((entry: PerformanceEntry & { hadRecentInput?: boolean; value?: number }) => {
+          if (!entry.hadRecentInput && entry.value) {
             clsValue += entry.value;
           }
         });
@@ -184,7 +186,7 @@ export class Analytics {
 
     // TTFB - Time to First Byte
     if ('performance' in window && 'timing' in performance) {
-      const timing = (performance as any).timing;
+      const timing = (performance as Performance & { timing: { responseStart: number; navigationStart: number } }).timing;
       const ttfb = timing.responseStart - timing.navigationStart;
       this.trackPerformance({ ttfb });
     }
@@ -285,7 +287,7 @@ export class Analytics {
     this.eventQueue
       .filter(event => event.name === 'user_interaction')
       .forEach(event => {
-        const element = event.properties?.element;
+        const element = event.properties?.element as string | undefined;
         if (element) {
           usage[element] = (usage[element] || 0) + 1;
         }
@@ -308,15 +310,15 @@ export function getAnalytics(): Analytics | null {
 }
 
 // Convenience functions
-export function track(eventName: string, properties?: Record<string, any>): void {
+export function track(eventName: string, properties?: Record<string, unknown>): void {
   analyticsInstance?.track(eventName, properties);
 }
 
-export function trackInteraction(element: string, action: string, properties?: Record<string, any>): void {
+export function trackInteraction(element: string, action: string, properties?: Record<string, unknown>): void {
   analyticsInstance?.trackInteraction(element, action, properties);
 }
 
-export function trackError(error: Error, context?: Record<string, any>): void {
+export function trackError(error: Error, context?: Record<string, unknown>): void {
   analyticsInstance?.trackError(error, context);
 }
 

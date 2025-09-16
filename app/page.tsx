@@ -202,7 +202,7 @@ export default function Home() {
             <ChatInput
               value={input}
               onChange={setInput}
-              onSubmit={(_message) => {
+              onSubmit={() => {
                 const syntheticEvent = {
                   preventDefault: () => {},
                 } as React.FormEvent;

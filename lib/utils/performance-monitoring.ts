@@ -37,18 +37,21 @@ export const measureCoreWebVitals = (): Promise<PerformanceMetrics> => {
 
     // First Input Delay
     const fidObserver = new PerformanceObserver((list) => {
-      const entries = list.getEntries();
+      const entries = list.getEntries() as PerformanceEventTiming[];
       const firstEntry = entries[0];
-      metrics.fid = firstEntry.processingStart - firstEntry.startTime;
+      if (firstEntry && 'processingStart' in firstEntry) {
+        metrics.fid = firstEntry.processingStart - firstEntry.startTime;
+      }
     });
-    fidObserver.observe({ entryTypes: ['first-input'] });
+    fidObserver.observe({ type: 'first-input', buffered: true });
 
     // Cumulative Layout Shift
     let clsValue = 0;
     const clsObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        if (!(entry as any).hadRecentInput) {
-          clsValue += (entry as any).value;
+        const layoutShiftEntry = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
+        if (!layoutShiftEntry.hadRecentInput && layoutShiftEntry.value) {
+          clsValue += layoutShiftEntry.value;
         }
       }
       metrics.cls = clsValue;
@@ -121,11 +124,11 @@ export const measureBundleLoad = (bundleName: string) => {
  * Monitor memory usage
  */
 export const monitorMemoryUsage = () => {
-  if (typeof window === 'undefined' || !(performance as any).memory) {
+  if (typeof window === 'undefined' || !(performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory) {
     return null;
   }
   
-  const memory = (performance as any).memory;
+  const memory = (performance as Performance & { memory: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
   return {
     usedJSHeapSize: memory.usedJSHeapSize,
     totalJSHeapSize: memory.totalJSHeapSize,
@@ -345,6 +348,6 @@ export const registerServiceWorker = async () => {
 // Type declarations for gtag
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
+    gtag?: (...args: unknown[]) => void;
   }
 }

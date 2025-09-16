@@ -259,7 +259,7 @@ class LocalConversationStorage implements ConversationStorage {
         ...parsed,
         createdAt: new Date(parsed.createdAt),
         updatedAt: new Date(parsed.updatedAt),
-        messages: parsed.messages.map((msg: any) => ({
+        messages: parsed.messages.map((msg: { id: string; role: string; content: string; timestamp: string }) => ({
           ...msg,
           timestamp: new Date(msg.timestamp)
         }))
@@ -270,7 +270,7 @@ class LocalConversationStorage implements ConversationStorage {
       }
       
       return conversation
-    } catch (error) {
+    } catch {
       throw new Error('Failed to parse JSON conversation data')
     }
   }

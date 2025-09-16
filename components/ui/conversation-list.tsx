@@ -2,9 +2,9 @@
 
 import React from 'react'
 import { ConversationSummary } from '../../lib/types/conversation'
-import { Button } from './button'
-import { Card } from './card'
-import { Input } from './input'
+import Button from './button'
+import Card from './card'
+import Input from './input'
 import Layout from './layout'
 import { 
   MagnifyingGlassIcon, 

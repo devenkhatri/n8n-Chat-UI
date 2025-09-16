@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { RefreshCw, AlertTriangle, Bug, Download, Trash2 } from 'lucide-react'
-import { Button } from './button'
-import { Card } from './card'
+import { RefreshCw, AlertTriangle, Download, Trash2 } from 'lucide-react'
+import Button from './button'
+import Card from './card'
 import { getStoredErrors, clearStoredErrors } from '../../lib/utils/error-logging'
 
 interface ErrorRecoveryProps {
@@ -20,7 +20,8 @@ export function ErrorRecovery({
   showAdvanced = false 
 }: ErrorRecoveryProps) {
   const [showDetails, setShowDetails] = React.useState(false)
-  const [storedErrors, setStoredErrors] = React.useState<any[]>([])
+  type StoredErrorEntry = { timestamp: string | Date; error?: { name?: string; message?: string; stack?: string } }
+  const [storedErrors, setStoredErrors] = React.useState<StoredErrorEntry[]>([])
 
   React.useEffect(() => {
     if (showAdvanced) {
@@ -206,3 +207,5 @@ export function ErrorRecovery({
     </div>
   )
 }
+
+export default ErrorRecovery

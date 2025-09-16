@@ -70,11 +70,11 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({ message, history }),
         signal: controller.signal,
       });
-    } catch (fetchError: any) {
+    } catch (fetchError: unknown) {
       clearTimeout(timeoutId);
       
       // Handle different types of fetch errors
-      if (fetchError.name === 'AbortError') {
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
         return NextResponse.json(
           { 
             error: "Request timeout - the service took too long to respond",
@@ -86,7 +86,9 @@ export async function POST(req: NextRequest) {
         );
       }
       
-      if (fetchError.code === 'ECONNREFUSED' || fetchError.code === 'ENOTFOUND') {
+      if (fetchError instanceof Error && ('code' in fetchError) && 
+          ((fetchError as NodeJS.ErrnoException).code === 'ECONNREFUSED' || 
+           (fetchError as NodeJS.ErrnoException).code === 'ENOTFOUND')) {
         return NextResponse.json(
           { 
             error: "Unable to connect to the chat service",
@@ -203,10 +205,10 @@ export async function POST(req: NextRequest) {
     });
 
     return res;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("/api/chat error", {
-      error: err.message,
-      stack: err.stack,
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
       sessionId,
       processingTime: Date.now() - startTime
     });
@@ -231,7 +233,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ remaining, max: MAX_MESSAGES, sessionId });
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE() {
   const res = NextResponse.json({ success: true, message: "Message limit reset" });
   res.cookies.delete("msgCount");
   res.cookies.delete("sessionId");

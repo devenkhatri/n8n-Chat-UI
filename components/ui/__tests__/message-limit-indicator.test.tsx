@@ -3,13 +3,17 @@ import { render, screen, fireEvent } from '@testing-library/react'
 
 // Mock the dependencies
 jest.mock('../button', () => ({
-  Button: ({ children, onClick, ...props }: any) => (
+  Button: ({ children, onClick, ...props }: React.PropsWithChildren<{
+    onClick?: () => void;
+  } & Record<string, unknown>>) => (
     <button onClick={onClick} {...props}>{children}</button>
   )
 }))
 
 jest.mock('../card', () => ({
-  Card: ({ children, className, ...props }: any) => (
+  Card: ({ children, className, ...props }: React.PropsWithChildren<{
+    className?: string;
+  } & Record<string, unknown>>) => (
     <div className={className} {...props}>{children}</div>
   )
 }))
@@ -17,7 +21,9 @@ jest.mock('../card', () => ({
 jest.mock('../layout', () => ({
   __esModule: true,
   default: {
-    Flex: ({ children, className, ...props }: any) => (
+    Flex: ({ children, className, ...props }: React.PropsWithChildren<{
+      className?: string;
+    } & Record<string, unknown>>) => (
       <div className={className} {...props}>{children}</div>
     )
   }

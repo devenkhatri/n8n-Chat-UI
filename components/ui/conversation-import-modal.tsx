@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Button } from './button'
-import { Card } from './card'
+import Button from './button'
+import Card from './card'
 import Layout from './layout'
 import { 
   XMarkIcon,
@@ -148,7 +148,7 @@ export function ConversationImportModal({
                   ].map((option) => (
                     <button
                       key={option.value}
-                      onClick={() => setFormat(option.value as any)}
+                      onClick={() => setFormat(option.value as 'json' | 'markdown')}
                       className={`p-3 text-left border rounded-lg transition-colors ${
                         format === option.value
                           ? 'border-primary bg-primary/5 text-primary'

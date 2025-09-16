@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Card } from './card';
-import { Button } from './button';
+import React, { useState, useEffect, useCallback } from 'react';
+import Card from './card';
+import Button from './button';
 import { useAnalytics } from '@/hooks/use-analytics';
 import { UsageMetrics, PerformanceMetrics } from '@/lib/analytics';
 
@@ -21,7 +21,7 @@ interface DashboardData {
   };
 }
 
-export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
+export default function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
   const { getSessionMetrics, isEnabled } = useAnalytics();
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     sessionMetrics: null,
@@ -34,26 +34,9 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
     },
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (!isEnabled) {
-      setIsLoading(false);
-      return;
-    }
-
-    loadDashboardData();
-
-    // Set up auto-refresh
-    const interval = setInterval(loadDashboardData, 30000); // Refresh every 30 seconds
-    setRefreshInterval(interval);
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isEnabled]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -76,7 +59,24 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [getSessionMetrics]);
+
+  useEffect(() => {
+    if (!isEnabled) {
+      setIsLoading(false);
+      return;
+    }
+
+    loadDashboardData();
+
+    // Set up auto-refresh
+    const interval = setInterval(loadDashboardData, 30000); // Refresh every 30 seconds
+    setRefreshInterval(interval);
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isEnabled, getSessionMetrics, loadDashboardData]);
 
   const loadPerformanceMetrics = async (): Promise<PerformanceMetrics[]> => {
     // In a real application, this would fetch from your analytics API

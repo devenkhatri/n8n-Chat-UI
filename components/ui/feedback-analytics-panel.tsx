@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Card } from './card'
+import Card from './card'
 import Layout from './layout'
 import { 
   ChartBarIcon,
@@ -9,8 +9,8 @@ import {
   HandThumbDownIcon,
   ChatBubbleLeftEllipsisIcon,
   CalendarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
 
 export interface FeedbackStats {
@@ -59,9 +59,9 @@ export function FeedbackAnalyticsPanel({
   const getTrendIcon = () => {
     switch (stats.trend) {
       case 'up':
-        return <TrendingUpIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
+        return <ArrowTrendingUpIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
       case 'down':
-        return <TrendingDownIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
+        return <ArrowTrendingDownIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
       default:
         return <div className="h-4 w-4" />
     }
@@ -91,7 +91,7 @@ export function FeedbackAnalyticsPanel({
         
         <select
           value={timeRange}
-          onChange={(e) => onTimeRangeChange?.(e.target.value as any)}
+          onChange={(e) => onTimeRangeChange?.(e.target.value as '7d' | '30d' | '90d' | 'all')}
           className="text-sm border border-border rounded-md px-3 py-1 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
         >
           {timeRangeOptions.map(option => (
@@ -254,12 +254,12 @@ export function FeedbackAnalyticsPanel({
                     </Layout.Flex>
                     
                     <p className="text-xs text-muted-foreground">
-                      Message: "{feedback.messagePreview}"
+                      Message: &quot;{feedback.messagePreview}&quot;
                     </p>
                     
                     {feedback.comment && (
                       <p className="text-sm text-foreground">
-                        "{feedback.comment}"
+                        &quot;{feedback.comment}&quot;
                       </p>
                     )}
                   </div>

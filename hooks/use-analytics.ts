@@ -140,7 +140,7 @@ function generateSessionId(): string {
 // Hook for tracking component performance
 export function useComponentPerformance(componentName: string) {
   const { trackPerformance } = useAnalytics();
-  const renderStartRef = useRef<number>();
+  const renderStartRef = useRef<number | null>(null);
 
   useEffect(() => {
     renderStartRef.current = performance.now();

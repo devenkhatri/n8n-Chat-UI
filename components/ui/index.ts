@@ -35,7 +35,7 @@ export { default as ProgressiveLoader } from './progressive-loader'
 export { default as MessageList } from './message-list'
 
 // Analytics components
-export { AnalyticsDashboard } from './analytics-dashboard'
+export { default as AnalyticsDashboard } from './analytics-dashboard'
 
 // Types
 export type * from '../../lib/types/ui'

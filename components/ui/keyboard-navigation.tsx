@@ -24,7 +24,7 @@ export function KeyboardNavigation({
   className,
 }: KeyboardNavigationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [currentIndex, setCurrentIndex] = React.useState(0);
+  const [, setCurrentIndex] = React.useState(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -113,7 +113,7 @@ export function useKeyboardNavigation(
     onEscape?: () => void;
   } = {}
 ) {
-  const { orientation = 'vertical', wrap = true, onEscape } = options;
+  const { orientation = 'vertical', onEscape } = options;
   const [currentIndex, setCurrentIndex] = React.useState(0);
 
   const handleKeyDown = React.useCallback(

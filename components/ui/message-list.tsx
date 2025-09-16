@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, type Variants, cubicBezier } from 'framer-motion'
 import ChatMessage from './chat-message'
 import { type ChatMessageProps } from '../../lib/types/ui'
 
@@ -13,7 +13,7 @@ interface MessageListProps {
 }
 
 // Container variants for stagger animation
-const messageListVariants = {
+const messageListVariants: Variants = {
   hidden: {
     opacity: 0
   },
@@ -27,7 +27,7 @@ const messageListVariants = {
 }
 
 // Individual message variants for stagger effect
-const messageItemVariants = {
+const messageItemVariants: Variants = {
   hidden: { 
     opacity: 0, 
     y: 30,
@@ -39,7 +39,7 @@ const messageItemVariants = {
     scale: 1,
     transition: {
       duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94]
+      ease: cubicBezier(0.25, 0.46, 0.45, 0.94)
     }
   },
   exit: { 
@@ -48,7 +48,7 @@ const messageItemVariants = {
     scale: 0.9,
     transition: {
       duration: 0.3,
-      ease: [0.55, 0.06, 0.68, 0.19]
+      ease: cubicBezier(0.55, 0.06, 0.68, 0.19)
     }
   }
 }
@@ -69,7 +69,7 @@ const MessageList: React.FC<MessageListProps> = ({
       className={className}
     >
       <AnimatePresence mode="popLayout">
-        {messages.map((message, index) => (
+        {messages.map((message) => (
           <motion.div
             key={message.id}
             variants={messageItemVariants}

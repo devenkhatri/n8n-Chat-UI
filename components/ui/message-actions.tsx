@@ -79,7 +79,6 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 }
 
 const MessageActions: React.FC<MessageActionsProps> = ({
-  messageId,
   messageRole,
   onCopy,
   onRegenerate,

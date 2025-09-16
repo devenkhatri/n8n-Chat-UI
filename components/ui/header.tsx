@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 import { type HeaderProps } from '../../lib/types/ui'
 import { cn } from '../../lib/utils'
 import { useIsMobile, hapticFeedback } from '../../lib/utils/mobile'
@@ -85,18 +86,23 @@ const BrandingLogo: React.FC<{
   return (
     <div className={cn("flex items-center gap-2", className)}>
       {/* Custom logo or default logo */}
-      {hasLogo ? (
-        <img 
-          src={logoUrl} 
-          alt={`${appName} logo`}
-          className="h-8 w-8 object-contain rounded-lg"
-          onError={(e) => {
-            // Fallback to default logo if custom logo fails to load
-            e.currentTarget.style.display = 'none'
-            const fallback = e.currentTarget.nextElementSibling as HTMLElement
-            if (fallback) fallback.style.display = 'flex'
-          }}
-        />
+      {hasLogo && logoUrl ? (
+        <div className="relative h-8 w-8">
+          <Image
+            src={logoUrl}
+            alt={`${appName} logo`}
+            fill
+            className="object-contain rounded-lg"
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+              // Fallback to default logo if custom logo fails to load
+              const img = e.currentTarget;
+              img.style.display = 'none';
+              const fallback = img.nextElementSibling as HTMLElement;
+              if (fallback) fallback.style.display = 'flex';
+            }}
+            unoptimized={logoUrl.startsWith('http')}
+          />
+        </div>
       ) : null}
       
       {/* Default logo (shown if no custom logo or as fallback) */}

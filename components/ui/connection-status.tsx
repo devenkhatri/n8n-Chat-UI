@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Wifi, WifiOff, AlertTriangle, Clock, CheckCircle } from 'lucide-react'
+import { Wifi, WifiOff, Clock, CheckCircle } from 'lucide-react'
 import { useNetworkState, networkManager } from '../../lib/utils/network'
 import Button from './button'
 

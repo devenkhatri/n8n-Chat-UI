@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 interface HealthCheckResult {
   status: 'healthy' | 'unhealthy';
@@ -33,7 +33,7 @@ interface HealthCheckResult {
 // Track application start time
 const startTime = Date.now();
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(): Promise<NextResponse> {
   const startCheck = Date.now();
   
   try {
@@ -95,10 +95,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Disk space check (if available)
-    if (typeof process !== 'undefined' && process.platform !== 'browser') {
+    if (typeof process !== 'undefined' && typeof process.platform !== 'undefined') {
       try {
         const fs = await import('fs');
-        const stats = fs.statSync('.');
+        fs.statSync('.');
         
         // This is a simplified check - in production you'd want more sophisticated disk monitoring
         healthData.checks.disk = {
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           usage: 0, // Would need platform-specific implementation
           available: 0, // Would need platform-specific implementation
         };
-      } catch (error) {
+      } catch {
         // Disk check failed, but don't mark as unhealthy unless critical
       }
     }
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 // Readiness check - simpler check for container orchestration
-export async function HEAD(request: NextRequest): Promise<NextResponse> {
+export async function HEAD(): Promise<NextResponse> {
   try {
     // Quick readiness check
     const isReady = Date.now() - startTime > 1000; // App has been running for at least 1 second
@@ -163,7 +163,7 @@ export async function HEAD(request: NextRequest): Promise<NextResponse> {
         'X-Ready': isReady ? 'true' : 'false',
       },
     });
-  } catch (error) {
+  } catch {
     return new NextResponse(null, {
       status: 503,
       headers: {

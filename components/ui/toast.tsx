@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, AlertTriangle, AlertCircle, Info, X } from 'lucide-react'
 import { type BaseComponentProps } from '../../lib/types/ui'
@@ -42,7 +42,6 @@ const iconStyles = {
 }
 
 const Toast: React.FC<ToastProps> = ({ 
-  id,
   type = 'info',
   title,
   description,
@@ -55,9 +54,14 @@ const Toast: React.FC<ToastProps> = ({
   children 
 }) => {
   const [isVisible, setIsVisible] = React.useState(visible)
-  const timeoutRef = React.useRef<NodeJS.Timeout>()
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
   const Icon = toastIcons[type]
+
+  const handleClose = useCallback(() => {
+    setIsVisible(false)
+    onClose?.()
+  }, [onClose])
 
   React.useEffect(() => {
     setIsVisible(visible)
@@ -73,14 +77,10 @@ const Toast: React.FC<ToastProps> = ({
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
       }
     }
-  }, [isVisible, persistent, duration])
-
-  const handleClose = () => {
-    setIsVisible(false)
-    onClose?.()
-  }
+  }, [isVisible, persistent, duration, handleClose])
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) {

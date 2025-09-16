@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Button } from './button'
-import { Card } from './card'
+import Button from './button'
+import Card from './card'
 import Layout from './layout'
 import { 
   HandThumbUpIcon,
@@ -244,7 +244,7 @@ export function MessageFeedbackComponent({
           </Layout.Flex>
           {feedback.comment && (
             <p className="mt-1 text-xs text-muted-foreground italic">
-              "{feedback.comment}"
+              &quot;{feedback.comment}&quot;
             </p>
           )}
         </div>

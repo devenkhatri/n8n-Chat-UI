@@ -2,62 +2,70 @@
 import { createLazyComponent, createLazyComponentWithSkeleton } from '../../../lib/utils/lazy-loading';
 
 // Heavy modal components
-export const LazySettingsModal = createLazyComponent(
-  () => import('../settings-modal'),
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-    <div className="bg-background rounded-lg p-6 w-full max-w-md">
-      <div className="animate-pulse">
-        <div className="h-6 bg-muted rounded mb-4"></div>
-        <div className="space-y-3">
-          <div className="h-4 bg-muted rounded"></div>
-          <div className="h-4 bg-muted rounded w-3/4"></div>
-          <div className="h-4 bg-muted rounded w-1/2"></div>
-        </div>
-      </div>
-    </div>
-  </div>
+export const LazySettingsModal = createLazyComponent<
+  typeof import('../settings-modal')['default']
+>(
+  () => import('../settings-modal')
 );
 
-export const LazyConversationExportModal = createLazyComponent(
+export const LazyConversationExportModal = createLazyComponent<
+  typeof import('../conversation-export-modal')['default']
+>(
   () => import('../conversation-export-modal')
 );
 
-export const LazyConversationImportModal = createLazyComponent(
+export const LazyConversationImportModal = createLazyComponent<
+  typeof import('../conversation-import-modal')['default']
+>(
   () => import('../conversation-import-modal')
 );
 
-export const LazyUpgradePromptModal = createLazyComponent(
+export const LazyUpgradePromptModal = createLazyComponent<
+  typeof import('../upgrade-prompt-modal')['default']
+>(
   () => import('../upgrade-prompt-modal')
 );
 
 // Analytics and dashboard components
-export const LazyAnalyticsDashboard = createLazyComponentWithSkeleton(
+export const LazyAnalyticsDashboard = createLazyComponentWithSkeleton<
+  typeof import('../analytics-dashboard')['default']
+>(
   () => import('../analytics-dashboard'),
   'skeleton'
 );
 
-export const LazyFeedbackAnalyticsPanel = createLazyComponentWithSkeleton(
+export const LazyFeedbackAnalyticsPanel = createLazyComponentWithSkeleton<
+  typeof import('../feedback-analytics-panel')['default']
+>(
   () => import('../feedback-analytics-panel'),
   'skeleton'
 );
 
 // Heavy panels
-export const LazyConversationHistoryPanel = createLazyComponentWithSkeleton(
+export const LazyConversationHistoryPanel = createLazyComponentWithSkeleton<
+  typeof import('../conversation-history-panel')['default']
+>(
   () => import('../conversation-history-panel'),
   'skeleton'
 );
 
-export const LazySettingsPanel = createLazyComponentWithSkeleton(
+export const LazySettingsPanel = createLazyComponentWithSkeleton<
+  typeof import('../settings-panel')['default']
+>(
   () => import('../settings-panel'),
   'skeleton'
 );
 
 // Branding components
-export const LazyBrandingPreview = createLazyComponent(
+export const LazyBrandingPreview = createLazyComponent<
+  typeof import('../branding-preview')['default']
+>(
   () => import('../branding-preview')
 );
 
 // Error recovery components
-export const LazyErrorRecovery = createLazyComponent(
+export const LazyErrorRecovery = createLazyComponent<
+  typeof import('../error-recovery')['default']
+>(
   () => import('../error-recovery')
 );

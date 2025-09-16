@@ -194,8 +194,8 @@ const BrandingPreview: React.FC<BrandingPreviewProps> = ({
       <Card className="p-6">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Live Preview</h3>
-          
-          <div 
+
+          <div
             className="space-y-4 p-4 border rounded-lg"
             style={previewStyles}
           >
@@ -203,14 +203,17 @@ const BrandingPreview: React.FC<BrandingPreviewProps> = ({
             <div className="flex items-center justify-between p-4 bg-primary text-primary-foreground rounded-lg">
               <div className="flex items-center gap-3">
                 {localBranding.logo && (
-                  <img 
-                    src={localBranding.logo} 
-                    alt="Logo" 
-                    className="h-8 w-8 object-contain"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                    }}
-                  />
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={localBranding.logo}
+                      alt="Logo"
+                      className="h-8 w-8 object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  </>
                 )}
                 <h1 className="text-xl font-bold">
                   {localBranding.appName || 'Chat UI'}

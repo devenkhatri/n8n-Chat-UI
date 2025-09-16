@@ -9,21 +9,22 @@ import { validateBrandingConfig, previewBranding, generateColorPalette, getContr
  * Hook for branding management and utilities
  */
 export function useBranding() {
+  // Establish branding and updater with safe fallback if provider missing
+  let branding: BrandingConfig & { logo?: string }
+  let updateBranding: (changes: Partial<BrandingConfig & { logo?: string }>) => void
+
   try {
-    const { branding, updateBranding } = useTheme()
-    return { branding, updateBranding }
-  } catch (error) {
-    // Fallback if theme provider is not available
-    const defaultBranding = {
+    const theme = useTheme()
+    branding = theme.branding as BrandingConfig & { logo?: string }
+    updateBranding = theme.updateBranding as (changes: Partial<BrandingConfig & { logo?: string }>) => void
+  } catch {
+    branding = {
       appName: 'Chat UI',
       primaryColor: '#3b82f6',
       secondaryColor: '#64748b',
       fontFamily: 'Inter',
     }
-    return {
-      branding: defaultBranding,
-      updateBranding: () => {},
-    }
+    updateBranding = () => {}
   }
 
   // Validation utilities

@@ -1,15 +1,15 @@
 import React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, type Variants, easeInOut, easeOut, easeIn } from 'framer-motion'
 import { type TypingIndicatorProps } from '../../lib/types/ui'
 import { cn } from '../../lib/utils'
 
 const DotsIndicator: React.FC<{ className?: string }> = ({ className }) => {
-  const dotVariants = {
+  const dotVariants: Variants = {
     initial: { y: 0 },
     animate: { y: -8 },
   }
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     initial: {},
     animate: {
       transition: {
@@ -40,7 +40,7 @@ const DotsIndicator: React.FC<{ className?: string }> = ({ className }) => {
 }
 
 const PulseIndicator: React.FC<{ className?: string }> = ({ className }) => {
-  const pulseVariants = {
+  const pulseVariants: Variants = {
     initial: { scale: 1, opacity: 0.7 },
     animate: {
       scale: [1, 1.2, 1],
@@ -48,7 +48,7 @@ const PulseIndicator: React.FC<{ className?: string }> = ({ className }) => {
       transition: {
         duration: 1.5,
         repeat: Infinity,
-        ease: "easeInOut",
+        ease: easeInOut,
       },
     },
   }
@@ -67,7 +67,7 @@ const PulseIndicator: React.FC<{ className?: string }> = ({ className }) => {
 }
 
 const WaveIndicator: React.FC<{ className?: string }> = ({ className }) => {
-  const waveVariants = {
+  const waveVariants: Variants = {
     initial: { scaleY: 1 },
     animate: { scaleY: [1, 2, 1] },
   }
@@ -108,7 +108,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({
   className,
   children 
 }) => {
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { 
       opacity: 0, 
       y: 10,
@@ -120,7 +120,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({
       scale: 1,
       transition: {
         duration: 0.3,
-        ease: "easeOut"
+        ease: easeOut
       }
     },
     exit: { 
@@ -129,7 +129,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({
       scale: 0.95,
       transition: {
         duration: 0.2,
-        ease: "easeIn"
+        ease: easeIn
       }
     }
   }

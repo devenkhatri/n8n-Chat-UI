@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { lazy, Suspense, ComponentType } from 'react';
-import { LoadingState } from '../../components/ui/loading-state';
+import LoadingState from '../../components/ui/loading-state';
 
 /**
  * Utility for creating lazy-loaded components with loading states

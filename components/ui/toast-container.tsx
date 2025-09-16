@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { createPortal } from 'react-dom'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, type Variants, easeOut } from 'framer-motion'
 import Toast from './toast'
 import { useToastManager } from '../../hooks/use-toast-manager'
 
@@ -20,7 +20,7 @@ const positionClasses = {
   'bottom-center': 'bottom-4 left-1/2 transform -translate-x-1/2',
 }
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -30,7 +30,7 @@ const containerVariants = {
   },
 }
 
-const toastVariants = {
+const toastVariants: Variants = {
   hidden: { 
     opacity: 0, 
     y: -50, 
@@ -41,7 +41,7 @@ const toastVariants = {
     opacity: 1, 
     y: 0, 
     scale: 1,
-    transition: { duration: 0.3, ease: 'easeOut' }
+    transition: { duration: 0.3, ease: easeOut }
   },
   exit: { 
     opacity: 0, 

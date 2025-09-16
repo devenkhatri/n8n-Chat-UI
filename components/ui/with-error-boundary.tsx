@@ -20,7 +20,7 @@ export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   options: WithErrorBoundaryOptions = {}
 ) {
-  const WrappedComponent = React.forwardRef<any, P>((props, ref) => {
+  const WrappedComponent = React.forwardRef<unknown, P>((props, ref) => {
     const { fallback = 'generic', onError, isolate = true } = options
     
     const FallbackComponent = typeof fallback === 'string' 
@@ -29,7 +29,7 @@ export function withErrorBoundary<P extends object>(
 
     if (!isolate) {
       // Don't wrap with error boundary, let parent handle errors
-      return <Component {...props} ref={ref} />
+      return <Component {...(props as P)} {...(ref ? { ref } : {})} />
     }
 
     return (
@@ -37,7 +37,7 @@ export function withErrorBoundary<P extends object>(
         fallback={FallbackComponent}
         onError={onError}
       >
-        <Component {...props} ref={ref} />
+        <Component {...(props as P)} {...(ref ? { ref } : {})} />
       </ErrorBoundary>
     )
   })
@@ -51,7 +51,7 @@ export function withErrorBoundary<P extends object>(
 export function useErrorHandler() {
   const [error, setError] = React.useState<Error | null>(null)
 
-  const reportError = React.useCallback((error: Error, context?: Record<string, any>) => {
+  const reportError = React.useCallback((error: Error, context?: Record<string, unknown>) => {
     // Log the error
     import('../../lib/utils/error-logging').then(({ logError }) => {
       logError(error, context)

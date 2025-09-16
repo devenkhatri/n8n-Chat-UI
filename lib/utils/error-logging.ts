@@ -6,7 +6,7 @@ interface ErrorLogEntry {
   url: string
   userId?: string
   sessionId?: string
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 }
 
 interface ErrorReportingConfig {
@@ -38,7 +38,7 @@ class ErrorLogger {
     }
   }
 
-  logError(error: Error, errorInfo?: React.ErrorInfo, context?: Record<string, any>) {
+  logError(error: Error, errorInfo?: React.ErrorInfo, context?: Record<string, unknown>) {
     const entry: ErrorLogEntry = {
       timestamp: new Date(),
       error: {
@@ -219,11 +219,11 @@ export const errorLogger = new ErrorLogger({
 })
 
 // Utility functions
-export function logError(error: Error, context?: Record<string, any>) {
+export function logError(error: Error, context?: Record<string, unknown>) {
   errorLogger.logError(error, undefined, context)
 }
 
-export function logErrorWithInfo(error: Error, errorInfo: React.ErrorInfo, context?: Record<string, any>) {
+export function logErrorWithInfo(error: Error, errorInfo: React.ErrorInfo, context?: Record<string, unknown>) {
   errorLogger.logError(error, errorInfo, context)
 }
 

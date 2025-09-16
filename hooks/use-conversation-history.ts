@@ -186,8 +186,11 @@ export function useConversationHistory(): UseConversationHistoryReturn {
       const starred = !conversation.metadata?.starred
       await updateConversation(id, {
         metadata: {
-          ...conversation.metadata,
-          starred
+          messageCount: conversation.metadata?.messageCount ?? 0,
+          lastActivity: conversation.metadata?.lastActivity ?? new Date(),
+          tags: conversation.metadata?.tags,
+          starred,
+          archived: conversation.metadata?.archived,
         }
       })
     } catch (error) {
@@ -203,8 +206,11 @@ export function useConversationHistory(): UseConversationHistoryReturn {
       const archived = !conversation.metadata?.archived
       await updateConversation(id, {
         metadata: {
-          ...conversation.metadata,
-          archived
+          messageCount: conversation.metadata?.messageCount ?? 0,
+          lastActivity: conversation.metadata?.lastActivity ?? new Date(),
+          tags: conversation.metadata?.tags,
+          starred: conversation.metadata?.starred,
+          archived,
         }
       })
     } catch (error) {

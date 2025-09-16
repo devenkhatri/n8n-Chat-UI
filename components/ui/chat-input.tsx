@@ -236,7 +236,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     if (isMobile) {
       hapticFeedback('light')
     }
-  }, [value, disabled, loading, rateLimited, maxLength, validateInput, onSubmit])
+  }, [value, disabled, loading, rateLimited, maxLength, validateInput, onSubmit, isMobile])
   
   // Handle key down events
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {

@@ -1,5 +1,5 @@
 import React, { useId, useState } from 'react'
-import { motion, type Variants } from 'framer-motion'
+
 import { type InputProps } from '../../lib/types/ui'
 import { inputVariants, inputLabelVariants, inputHelperVariants, inputIconVariants } from '../../lib/variants/input'
 import { cn } from '../../lib/utils'

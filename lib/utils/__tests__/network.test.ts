@@ -137,7 +137,7 @@ describe('Network Utilities', () => {
       Object.defineProperty(window.navigator, 'onLine', { value: false })
       
       // This would normally queue the request
-      const promise = networkManager.fetchWithRetry('/test')
+      networkManager.fetchWithRetry('/test')
       
       expect(networkManager.getQueueSize()).toBeGreaterThan(0)
       

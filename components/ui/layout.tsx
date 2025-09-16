@@ -208,7 +208,7 @@ export const Flex: React.FC<FlexProps> = ({
   }
 
   const getResponsiveClasses = () => {
-    const classes = []
+    const classes: string[] = []
     
     Object.entries(responsive).forEach(([breakpoint, props]) => {
       if (props.direction) {

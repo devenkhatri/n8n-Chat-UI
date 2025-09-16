@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { useAccessibility } from '../../providers/accessibility-provider';
-import { Button } from './button';
-import { Card } from './card';
+import Button from './button';
+import Card from './card';
 
 interface AccessibilitySettingsProps {
   className?: string;
@@ -95,7 +95,7 @@ export function AccessibilitySettings({ className }: AccessibilitySettingsProps)
                   name="fontSize"
                   value={option.value}
                   checked={settings.fontSize === option.value}
-                  onChange={(e) => updateSettings({ fontSize: e.target.value as any })}
+                  onChange={(e) => updateSettings({ fontSize: e.target.value as 'small' | 'medium' | 'large' })}
                   className="border-border focus:ring-2 focus:ring-primary focus:border-primary"
                 />
                 <span className="text-sm">{option.label}</span>

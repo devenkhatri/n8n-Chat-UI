@@ -4,8 +4,8 @@ import React from 'react'
 import { useConversationHistory } from '../../hooks/use-conversation-history'
 import { ConversationExportOptions } from '../../lib/types/conversation'
 import { ChatMessage } from '../../lib/types/ui'
-import { Button } from './button'
-import { Card } from './card'
+import Button from './button'
+import Card from './card'
 import ConversationList from './conversation-list'
 import ConversationExportModal from './conversation-export-modal'
 import ConversationImportModal from './conversation-import-modal'
@@ -58,7 +58,7 @@ export function ConversationHistoryPanel({
     title?: string
   }>({ isOpen: false })
   const [importModal, setImportModal] = React.useState(false)
-  const [selectedId, setSelectedId] = React.useState<string | null>(null)
+  const [selectedId, setSelectedId] = React.useState<string | undefined>(undefined)
 
   // Handle search with debouncing
   React.useEffect(() => {
@@ -140,7 +140,7 @@ export function ConversationHistoryPanel({
   const handleClearHistory = async () => {
     if (confirm('Are you sure you want to delete all conversations? This action cannot be undone.')) {
       await clearHistory()
-      setSelectedId(null)
+      setSelectedId(undefined)
     }
   }
 
@@ -154,9 +154,24 @@ export function ConversationHistoryPanel({
         {/* Header */}
         <div className="p-4 border-b border-border">
           <Layout.Flex justify="between" align="center" className="mb-4">
-            <h2 className="text-lg font-semibold text-foreground">
-              Conversation History
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-foreground">
+                Conversation History
+              </h2>
+              {onNewConversation && (
+                <button
+                  onClick={onNewConversation}
+                  className="p-1 text-sm text-muted-foreground hover:text-foreground"
+                  title="Start new conversation"
+                >
+                  <span className="sr-only">New conversation</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+              )}
+            </div>
             <Button
               variant="ghost"
               size="sm"

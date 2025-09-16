@@ -31,7 +31,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault()
-        onClick?.(e as React.MouseEvent<HTMLDivElement>)
+        // Forward keyboard activation as a click to consumers
+        onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>)
       }
       onKeyDown?.(e)
     }

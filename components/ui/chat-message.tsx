@@ -1,67 +1,38 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion, type Variants, easeInOut, easeOut } from 'framer-motion'
 import { type ChatMessageProps } from '../../lib/types/ui'
 import { cn } from '../../lib/utils'
 import MessageActions from './message-actions'
 
-const messageVariants = {
-  hidden: { 
-    opacity: 0, 
-    y: 30,
-    scale: 0.95,
-    filter: "blur(4px)"
-  },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    scale: 1,
-    filter: "blur(0px)",
-    transition: {
-      duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94], // Custom easing for smooth entrance
-      staggerChildren: 0.1
-    }
-  },
-  exit: { 
-    opacity: 0, 
-    y: -30,
-    scale: 0.9,
-    filter: "blur(4px)",
-    transition: {
-      duration: 0.3,
-      ease: [0.55, 0.06, 0.68, 0.19] // Custom easing for smooth exit
-    }
-  }
-}
 
 // Enhanced variants for message content with stagger effect
-const messageContentVariants = {
-  hidden: { 
+const messageContentVariants: Variants = {
+  hidden: {
     opacity: 0,
     y: 10
   },
-  visible: { 
+  visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.3,
-      ease: "easeOut"
+      ease: easeOut
     }
   }
 }
 
 // Variants for message bubble with subtle scale animation
-const messageBubbleVariants = {
-  hidden: { 
+const messageBubbleVariants: Variants = {
+  hidden: {
     scale: 0.95,
     opacity: 0
   },
-  visible: { 
+  visible: {
     scale: 1,
     opacity: 1,
     transition: {
       duration: 0.3,
-      ease: "easeOut",
+      ease: easeOut,
       delay: 0.1
     }
   },
@@ -69,18 +40,18 @@ const messageBubbleVariants = {
     scale: 1.02,
     transition: {
       duration: 0.2,
-      ease: "easeOut"
+      ease: easeOut
     }
   }
 }
 
-const statusIndicatorVariants = {
+const statusIndicatorVariants: Variants = {
   sending: {
     opacity: [0.5, 1, 0.5],
     transition: {
       duration: 1.5,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: easeInOut
     }
   },
   sent: {
@@ -88,7 +59,7 @@ const statusIndicatorVariants = {
     scale: [1, 1.1, 1],
     transition: {
       duration: 0.3,
-      ease: "easeOut"
+      ease: easeOut
     }
   },
   error: {
@@ -96,7 +67,7 @@ const statusIndicatorVariants = {
     x: [-2, 2, -2, 2, 0],
     transition: {
       duration: 0.4,
-      ease: "easeInOut"
+      ease: easeInOut
     }
   }
 }
@@ -112,7 +83,7 @@ const formatTimestamp = (timestamp: Date): string => {
   if (minutes < 60) return `${minutes}m ago`
   if (hours < 24) return `${hours}h ago`
   if (days < 7) return `${days}d ago`
-  
+
   return timestamp.toLocaleDateString()
 }
 
@@ -159,18 +130,18 @@ const getStatusIcon = (status?: string) => {
   }
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ 
-  message, 
-  showActions = false, 
-  onCopy, 
-  onRegenerate, 
+const ChatMessage: React.FC<ChatMessageProps> = ({
+  message,
+  showActions = false,
+  onCopy,
+  onRegenerate,
   onFeedback,
   className,
-  children 
+  children
 }) => {
   const isUser = message.role === 'user'
   const isSystem = message.role === 'system'
-  
+
   return (
     <div
       className={cn(
@@ -185,7 +156,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       {!isUser && (
         <div className={cn(
           "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium",
-          isSystem 
+          isSystem
             ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
             : "bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300"
         )}>
@@ -199,7 +170,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         isUser ? "items-end" : "items-start"
       )}>
         {/* Message Bubble */}
-        <motion.div 
+        <motion.div
           variants={messageBubbleVariants}
           initial="hidden"
           animate="visible"
@@ -229,7 +200,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           )}
         >
           {/* Message Content */}
-          <motion.div 
+          <motion.div
             variants={messageContentVariants}
             className={cn(
               "prose prose-sm max-w-none",
@@ -246,8 +217,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           {message.metadata && (
             <div className={cn(
               "mt-2 pt-2 border-t text-xs opacity-70",
-              isUser 
-                ? "border-primary-400 text-primary-100" 
+              isUser
+                ? "border-primary-400 text-primary-100"
                 : "border-gray-200 text-gray-500 dark:border-gray-600 dark:text-gray-400"
             )}>
               {message.metadata.model && (
@@ -268,15 +239,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           "flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400",
           isUser ? "flex-row-reverse" : "flex-row"
         )}>
-          <time 
+          <time
             dateTime={message.timestamp.toISOString()}
             className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           >
             {formatTimestamp(message.timestamp)}
           </time>
-          
+
           {message.status && getStatusIcon(message.status)}
-          
+
           {/* Feedback indicator */}
           {message.feedback && (
             <motion.div
@@ -284,7 +255,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               animate={{ scale: 1 }}
               className={cn(
                 "w-4 h-4 rounded-full flex items-center justify-center text-xs",
-                message.feedback.rating === 'positive' 
+                message.feedback.rating === 'positive'
                   ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400"
                   : "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400"
               )}

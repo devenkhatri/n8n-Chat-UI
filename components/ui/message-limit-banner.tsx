@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Button } from './button'
+import Button from './button'
 import Layout from './layout'
 import { 
   XMarkIcon,
@@ -136,7 +136,7 @@ export function MessageLimitBanner({
               {showUpgrade && onUpgrade && (
                 <Button
                   size="sm"
-                  variant={effectiveVariant === 'error' ? 'default' : 'ghost'}
+                  variant={effectiveVariant === 'error' ? 'primary' : 'ghost'}
                   onClick={onUpgrade}
                   className="text-xs h-7"
                 >

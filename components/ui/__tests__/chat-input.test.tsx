@@ -1,15 +1,17 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ChatInput from '../chat-input'
 
 // Mock the Button component
 jest.mock('../button', () => {
-  return React.forwardRef<HTMLButtonElement, any>(({ children, ...props }, ref) => (
+  const MockButton = React.forwardRef<HTMLButtonElement, React.PropsWithChildren<Record<string, unknown>>>(({ children, ...props }, ref) => (
     <button ref={ref} {...props}>
       {children}
     </button>
-  ))
+  ));
+  MockButton.displayName = 'MockButton';
+  return MockButton;
 })
 
 describe('ChatInput', () => {
@@ -95,21 +97,21 @@ describe('ChatInput', () => {
   })
 
   it('shows warning color when near character limit', () => {
-    render(<ChatInput {...defaultProps} value="a".repeat(85) maxLength={100} />)
+    render(<ChatInput {...defaultProps} value={'a'.repeat(85)} maxLength={100} />)
     
     const charCount = screen.getByText('85/100')
     expect(charCount).toHaveClass('text-warning')
   })
 
   it('shows error color when over character limit', () => {
-    render(<ChatInput {...defaultProps} value="a".repeat(105) maxLength={100} />)
+    render(<ChatInput {...defaultProps} value={'a'.repeat(105)} maxLength={100} />)
     
     const charCount = screen.getByText('105/100')
     expect(charCount).toHaveClass('text-destructive')
   })
 
   it('disables submit when over character limit', () => {
-    render(<ChatInput {...defaultProps} value="a".repeat(105) maxLength={100} />)
+    render(<ChatInput {...defaultProps} value={'a'.repeat(105)} maxLength={100} />)
     
     const submitButton = screen.getByRole('button', { name: /send message/i })
     expect(submitButton).toBeDisabled()

@@ -1,5 +1,6 @@
-import { type VariantProps } from "class-variance-authority"
-import { type ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes } from "react"
+
+import { type ReactNode, type InputHTMLAttributes } from "react"
+import { type HTMLMotionProps } from "framer-motion"
 
 // Base component props
 export interface BaseComponentProps {
@@ -8,7 +9,8 @@ export interface BaseComponentProps {
 }
 
 // Button component types
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, BaseComponentProps {
+// Align with Framer Motion's motion.button props to avoid handler conflicts
+export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'className' | 'children'>, BaseComponentProps {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean

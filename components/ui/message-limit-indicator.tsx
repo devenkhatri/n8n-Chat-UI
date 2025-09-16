@@ -1,13 +1,12 @@
 'use client'
 
 import React from 'react'
-import { Button } from './button'
-import { Card } from './card'
+import Button from './button'
+import Card from './card'
 import Layout from './layout'
 import { 
   ExclamationTriangleIcon,
   SparklesIcon,
-  ArrowUpIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 

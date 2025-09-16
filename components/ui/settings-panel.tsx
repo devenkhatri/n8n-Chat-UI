@@ -316,7 +316,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, className }) => 
                 animationsEnabled: true,
                 compactMode: false,
               })
-              resetBranding()
+              resetBranding?.()
             }}
           >
             Reset All

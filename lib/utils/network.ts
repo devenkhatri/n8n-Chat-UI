@@ -3,7 +3,7 @@ interface RetryConfig {
   baseDelay: number
   maxDelay: number
   backoffFactor: number
-  retryCondition?: (error: any) => boolean
+  retryCondition?: (error: unknown) => boolean
 }
 
 interface NetworkState {
@@ -43,7 +43,7 @@ class NetworkManager {
 
     // Listen for connection changes
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection
+      const connection = (navigator as Navigator & { connection?: { addEventListener: (event: string, handler: () => void) => void } }).connection
       connection?.addEventListener('change', this.handleConnectionChange)
     }
   }
@@ -66,7 +66,7 @@ class NetworkManager {
 
   private getConnectionInfo() {
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection
+      const connection = (navigator as Navigator & { connection?: { type?: string } }).connection
       this.connectionType = connection?.type || 'unknown'
     }
   }
@@ -153,15 +153,21 @@ class NetworkManager {
       baseDelay: 1000,
       maxDelay: 10000,
       backoffFactor: 2,
-      retryCondition: (error) => {
+      retryCondition: (error: unknown) => {
         // Retry on network errors, 5xx errors, and 429 (rate limit)
-        if (error.name === 'TypeError' && error.message.includes('fetch')) {
-          return true // Network error
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+          return true; // Network error
         }
-        if (error.status >= 500 || error.status === 429) {
-          return true // Server error or rate limit
+        
+        // Use type assertion with the ErrorWithStatus interface
+        const errorWithStatus = error as ErrorWithStatus;
+        const status = errorWithStatus.status;
+        
+        if (typeof status === 'number' && (status >= 500 || status === 429)) {
+          return true; // Server error or rate limit
         }
-        return false
+        
+        return false;
       },
       ...retryConfig
     }
@@ -180,8 +186,8 @@ class NetworkManager {
         // Check if response indicates an error that should be retried
         if (!response.ok) {
           const error = new Error(`HTTP ${response.status}: ${response.statusText}`)
-          ;(error as any).status = response.status
-          ;(error as any).response = response
+          ;(error as Error & { status?: number; response?: Response }).status = response.status
+          ;(error as Error & { status?: number; response?: Response }).response = response
 
           if (attempt < config.maxRetries && config.retryCondition!(error)) {
             lastError = error
@@ -234,7 +240,7 @@ class NetworkManager {
       window.removeEventListener('offline', this.handleOffline)
       
       if ('connection' in navigator) {
-        const connection = (navigator as any).connection
+        const connection = (navigator as Navigator & { connection?: { removeEventListener: (event: string, handler: () => void) => void } }).connection
         connection?.removeEventListener('change', this.handleConnectionChange)
       }
     }
@@ -305,26 +311,33 @@ export function useNetworkRequest() {
 }
 
 // Error classification utilities
-export function isNetworkError(error: any): boolean {
-  return error.name === 'TypeError' && 
-         (error.message.includes('fetch') || 
-          error.message.includes('network') ||
-          error.message.includes('Failed to fetch'))
+interface ErrorWithStatus extends Error {
+  status?: number;
+  response?: Response;
 }
 
-export function isRetryableError(error: any): boolean {
-  if (isNetworkError(error)) return true
-  if (error.status >= 500) return true
-  if (error.status === 429) return true
-  if (error.status === 408) return true // Request timeout
-  return false
+export function isNetworkError(error: unknown): error is ErrorWithStatus {
+  return error instanceof Error && 
+    (error.name === 'TypeError' && error.message.includes('fetch') ||
+    error.name === 'NetworkError');
 }
 
-export function getErrorType(error: any): 'network' | 'server' | 'client' | 'unknown' {
-  if (isNetworkError(error)) return 'network'
-  if (error.status >= 500) return 'server'
-  if (error.status >= 400 && error.status < 500) return 'client'
-  return 'unknown'
+export function isRetryableError(error: unknown): boolean {
+  if (!isNetworkError(error)) return false;
+  
+  const status = error.status;
+  return status === undefined || status >= 500 || status === 429;
+}
+
+export function getErrorType(error: unknown): 'network' | 'server' | 'client' | 'unknown' {
+  if (isNetworkError(error)) {
+    if (error.status === undefined) return 'network';
+    
+    if (error.status >= 500) return 'server';
+    if (error.status >= 400) return 'client';
+  }
+  
+  return 'unknown';
 }
 
 // Import React for hooks

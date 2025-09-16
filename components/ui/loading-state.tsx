@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, type Variants, easeInOut } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import Skeleton from './skeleton'
 import MessageSkeleton from './message-skeleton'
@@ -14,19 +14,19 @@ interface LoadingStateProps {
 }
 
 // Spinner variants
-const spinnerVariants = {
+const spinnerVariants: Variants = {
   animate: {
     rotate: 360,
     transition: {
       duration: 1,
       repeat: Infinity,
-      ease: "linear"
+      ease: [0, 0, 1, 1]
     }
   }
 }
 
 // Dots variants
-const dotsContainerVariants = {
+const dotsContainerVariants: Variants = {
   animate: {
     transition: {
       staggerChildren: 0.2
@@ -34,26 +34,26 @@ const dotsContainerVariants = {
   }
 }
 
-const dotVariants = {
+const dotVariants: Variants = {
   animate: {
     y: [0, -10, 0],
     transition: {
       duration: 0.6,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: easeInOut
     }
   }
 }
 
 // Pulse variants
-const pulseVariants = {
+const pulseVariants: Variants = {
   animate: {
     scale: [1, 1.1, 1],
     opacity: [0.7, 1, 0.7],
     transition: {
       duration: 1.5,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: easeInOut
     }
   }
 }
