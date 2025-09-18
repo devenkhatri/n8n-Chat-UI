@@ -1,0 +1,62 @@
+groups:
+  - name: chat-ui-alerts
+    rules:
+      # Application is down
+      - alert: ApplicationDown
+        expr: up{job="chat-ui"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Chat UI application is down"
+          description: "The Chat UI application has been down for more than 1 minute."
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: http_error_rate_percent > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }}% which is above the 5% threshold."
+
+      # High response time
+      - alert: HighResponseTime
+        expr: http_request_duration_seconds > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "Average response time is {{ $value }}s which is above the 2s threshold."
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (nodejs_heap_used_bytes / nodejs_heap_total_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}% which is above the 90% threshold."
+
+      # No active sessions (might indicate a problem)
+      - alert: NoActiveSessions
+        expr: chat_active_sessions == 0
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "No active chat sessions"
+          description: "There have been no active chat sessions for more than 10 minutes."
+
+      # Health check failing
+      - alert: HealthCheckFailing
+        expr: up{job="chat-ui-health"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Health check is failing"
+          description: "The application health check has been failing for more than 2 minutes."

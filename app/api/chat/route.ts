@@ -3,11 +3,18 @@ import { NextRequest, NextResponse } from "next/server";
 const MAX_MESSAGES = parseInt(process.env.MAX_MESSAGES || "5", 10) || 5;
 
 export async function POST(req: NextRequest) {
+  const startTime = Date.now();
+  let sessionId: string | undefined;
+  
   try {
     const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
     if (!n8nWebhookUrl) {
       return NextResponse.json(
-        { error: "Server misconfiguration: N8N_WEBHOOK_URL is not set" },
+        { 
+          error: "Server misconfiguration: N8N_WEBHOOK_URL is not set",
+          errorType: "configuration",
+          retryable: false
+        },
         { status: 500 }
       );
     }
@@ -18,7 +25,11 @@ export async function POST(req: NextRequest) {
 
     if (!message || typeof message !== "string") {
       return NextResponse.json(
-        { error: "Missing 'message' in request body" },
+        { 
+          error: "Missing 'message' in request body",
+          errorType: "validation",
+          retryable: false
+        },
         { status: 400 }
       );
     }
@@ -26,59 +37,155 @@ export async function POST(req: NextRequest) {
     const cookies = req.cookies;
     const currentCount = parseInt(cookies.get("msgCount")?.value ?? "0", 10) || 0;
     const existingSessionId = cookies.get("sessionId")?.value;
-    const sessionId = existingSessionId && existingSessionId.length > 0 ? existingSessionId : crypto.randomUUID();
+    sessionId = existingSessionId && existingSessionId.length > 0 ? existingSessionId : crypto.randomUUID();
 
     if (currentCount >= MAX_MESSAGES) {
       return NextResponse.json(
-        { error: "Message limit reached", remaining: 0 },
+        { 
+          error: "Message limit reached", 
+          remaining: 0,
+          errorType: "rate_limit",
+          retryable: false,
+          resetTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        },
         { status: 429 }
       );
     }
 
-    // Forward the request to n8n webhook
+    // Forward the request to n8n webhook with timeout and retry logic
     const url = new URL(n8nWebhookUrl);
     url.searchParams.set("sessionId", sessionId);
-    const upstreamRes = await fetch(url.toString(), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message, history }),
-      // Optionally add a timeout via AbortController if desired
-    });
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
+    let upstreamRes: Response;
+    try {
+      upstreamRes = await fetch(url.toString(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "n8n-chat-ui/1.0",
+        },
+        body: JSON.stringify({ message, history }),
+        signal: controller.signal,
+      });
+    } catch (fetchError: unknown) {
+      clearTimeout(timeoutId);
+      
+      // Handle different types of fetch errors
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        return NextResponse.json(
+          { 
+            error: "Request timeout - the service took too long to respond",
+            errorType: "timeout",
+            retryable: true,
+            processingTime: Date.now() - startTime
+          },
+          { status: 408 }
+        );
+      }
+      
+      if (fetchError instanceof Error && ('code' in fetchError) && 
+          ((fetchError as NodeJS.ErrnoException).code === 'ECONNREFUSED' || 
+           (fetchError as NodeJS.ErrnoException).code === 'ENOTFOUND')) {
+        return NextResponse.json(
+          { 
+            error: "Unable to connect to the chat service",
+            errorType: "connection",
+            retryable: true,
+            processingTime: Date.now() - startTime
+          },
+          { status: 503 }
+        );
+      }
+      
+      throw fetchError; // Re-throw other errors to be caught by outer try-catch
+    }
+    
+    clearTimeout(timeoutId);
+
+    // Handle upstream errors with detailed error information
+    if (!upstreamRes.ok) {
+      let errorMessage = `Upstream service error (${upstreamRes.status})`;
+      let errorType = "upstream";
+      let retryable = false;
+      
+      if (upstreamRes.status >= 500) {
+        errorMessage = "The chat service is temporarily unavailable";
+        errorType = "server";
+        retryable = true;
+      } else if (upstreamRes.status === 429) {
+        errorMessage = "The chat service is rate limited";
+        errorType = "rate_limit";
+        retryable = true;
+      } else if (upstreamRes.status === 408) {
+        errorMessage = "The chat service timed out";
+        errorType = "timeout";
+        retryable = true;
+      }
+      
+      return NextResponse.json(
+        { 
+          error: errorMessage,
+          errorType,
+          retryable,
+          upstreamStatus: upstreamRes.status,
+          processingTime: Date.now() - startTime
+        },
+        { status: upstreamRes.status >= 500 ? 502 : upstreamRes.status }
+      );
+    }
 
     const contentType = upstreamRes.headers.get("content-type") || "";
 
     let reply = "";
-    if (contentType.includes("application/json")) {
-      const data: unknown = await upstreamRes.json().catch(() => ({}));
-      let outputValue: unknown = undefined;
-      if (typeof data === "object" && data !== null && "output" in data) {
-        outputValue = (data as Record<string, unknown>)["output"];
-      }
-      if (typeof outputValue === "string") {
-        reply = outputValue;
-      } else if (outputValue !== undefined) {
-        try {
-          reply = JSON.stringify(outputValue);
-        } catch {
-          reply = String(outputValue);
+    try {
+      if (contentType.includes("application/json")) {
+        const data: unknown = await upstreamRes.json();
+        let outputValue: unknown = undefined;
+        if (typeof data === "object" && data !== null && "output" in data) {
+          outputValue = (data as Record<string, unknown>)["output"];
+        }
+        if (typeof outputValue === "string") {
+          reply = outputValue;
+        } else if (outputValue !== undefined) {
+          try {
+            reply = JSON.stringify(outputValue);
+          } catch {
+            reply = String(outputValue);
+          }
+        } else {
+          reply = "";
         }
       } else {
-        reply = "";
+        reply = await upstreamRes.text();
       }
-    } else {
-      reply = await upstreamRes.text();
+    } catch (parseError) {
+      console.error("Error parsing upstream response:", parseError);
+      return NextResponse.json(
+        { 
+          error: "Invalid response from chat service",
+          errorType: "parse",
+          retryable: true,
+          processingTime: Date.now() - startTime
+        },
+        { status: 502 }
+      );
     }
 
     const newCount = currentCount + 1;
     const remaining = Math.max(0, MAX_MESSAGES - newCount);
+    const processingTime = Date.now() - startTime;
 
     // Prepare response
-    const res = NextResponse.json(
-      { reply, remaining },
-      { status: upstreamRes.ok ? 200 : upstreamRes.status }
-    );
+    const res = NextResponse.json({
+      reply,
+      remaining,
+      sessionId,
+      processingTime,
+      success: true
+    });
 
     // Set/Update cookies with a 24h expiration
     res.cookies.set("msgCount", String(newCount), {
@@ -98,10 +205,21 @@ export async function POST(req: NextRequest) {
     });
 
     return res;
-  } catch (err) {
-    console.error("/api/chat error", err);
+  } catch (err: unknown) {
+    console.error("/api/chat error", {
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+      sessionId,
+      processingTime: Date.now() - startTime
+    });
+    
     return NextResponse.json(
-      { error: "Unexpected server error" },
+      { 
+        error: "Unexpected server error",
+        errorType: "internal",
+        retryable: true,
+        processingTime: Date.now() - startTime
+      },
       { status: 500 }
     );
   }
@@ -115,7 +233,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ remaining, max: MAX_MESSAGES, sessionId });
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE() {
   const res = NextResponse.json({ success: true, message: "Message limit reset" });
   res.cookies.delete("msgCount");
   res.cookies.delete("sessionId");

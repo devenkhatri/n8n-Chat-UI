@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
-import rehypeRaw from "rehype-raw";
-import rehypePrism from "rehype-prism-plus";
+import { useEffect, useRef, useState } from "react";
+import { generateMessageId } from "../lib/utils/id";
+import Header from "../components/ui/header";
+import Layout from "../components/ui/layout";
+import ChatInput from "../components/ui/chat-input";
+import MessageList from "../components/ui/message-list";
+import TypingIndicator from "../components/ui/typing-indicator";
+import LoadingState from "../components/ui/loading-state";
+import MobileViewport from "../components/ui/mobile-viewport";
+import { AccessibleToastContainer } from "../components/ui/toast-container";
+import { ConnectionStatusToast } from "../components/ui/connection-status";
+import SettingsModal, { useSettingsModal } from "../components/ui/settings-modal";
 
 type ChatMessage = {
   id: string;
@@ -20,7 +26,9 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [remaining, setRemaining] = useState<number>(MAX_MESSAGES);
   const [loading, setLoading] = useState(false);
-  const [showReset, setShowReset] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const { isOpen: isSettingsOpen, openSettings, closeSettings } = useSettingsModal();
+
   const listRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -29,11 +37,13 @@ export default function Home() {
       .then((d) => {
         const remaining = typeof d?.remaining === "number" ? d.remaining : MAX_MESSAGES;
         setRemaining(remaining);
-        setShowReset(remaining <= 0);
       })
       .catch(() => {
         setRemaining(MAX_MESSAGES);
-        setShowReset(false);
+      })
+      .finally(() => {
+        // Add a small delay to show the loading state
+        setTimeout(() => setInitialLoading(false), 500);
       });
   }, []);
 
@@ -46,7 +56,7 @@ export default function Home() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSend) return;
-    const userMsg: ChatMessage = { id: crypto.randomUUID(), role: "user", content: input.trim() };
+    const userMsg: ChatMessage = { id: generateMessageId("user"), role: "user", content: input.trim() };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
@@ -61,22 +71,21 @@ export default function Home() {
         const errText = data?.error || `Request failed (${res.status})`;
         setMessages((prev) => [
           ...prev,
-          { id: crypto.randomUUID(), role: "assistant", content: `Error: ${errText}` },
+          { id: generateMessageId("assistant"), role: "assistant", content: `Error: ${errText}` },
         ]);
       } else {
         setMessages((prev) => [
           ...prev,
-          { id: crypto.randomUUID(), role: "assistant", content: String(data?.reply ?? "") },
+          { id: generateMessageId("assistant"), role: "assistant", content: String(data?.reply ?? "") },
         ]);
       }
       const remaining = typeof data?.remaining === "number" ? data.remaining : 0;
       setRemaining(remaining);
-      setShowReset(remaining <= 0);
     } catch (err) {
       const errorObj = err as unknown as { message?: string };
       setMessages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), role: "assistant", content: `Error: ${errorObj?.message || "Network error"}` },
+        { id: generateMessageId("assistant"), role: "assistant", content: `Error: ${errorObj?.message || "Network error"}` },
       ]);
     } finally {
       setLoading(false);
@@ -88,7 +97,6 @@ export default function Home() {
       const res = await fetch("/api/chat", { method: "DELETE" });
       if (res.ok) {
         setRemaining(MAX_MESSAGES);
-        setShowReset(false);
         setMessages([]);
       }
     } catch (err) {
@@ -96,88 +104,154 @@ export default function Home() {
     }
   };
 
-  const remainingText = useMemo(() => {
-    if (remaining <= 0) return "No messages remaining";
-    if (remaining === 1) return "1 message remaining";
-    return `${remaining} messages remaining`;
-  }, [remaining]);
+
+
+  // Convert messages to the format expected by ChatMessage component
+  const chatMessages = messages.map(m => ({
+    id: m.id,
+    role: m.role as 'user' | 'assistant',
+    content: m.content,
+    timestamp: new Date(), // You might want to add actual timestamps to your message type
+    status: loading && messages[messages.length - 1]?.id === m.id ? 'sending' as const : 'sent' as const
+  }));
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b border-black/10 dark:border-white/10">
-        <div className="container py-4 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">Fun - Chat</h1>
-          <div className="flex items-center gap-3">
-            <div className="text-sm opacity-80">{remainingText}</div>
-            <button
-              onClick={handleReset}
-              className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                showReset 
-                  ? "bg-white-100 dark:bg-white-900/20 text-white dark:text-black hover:bg-white-200 dark:hover:bg-white-900/30" 
-                  : "opacity-0 pointer-events-none"
-              }`}
-              disabled={!showReset}
-            >
-              Reset Limit
-            </button>
-          </div>
-        </div>
-      </header>
-      <main className="flex-1 container py-6 flex flex-col">
-        <div ref={listRef} className="flex-1 overflow-y-auto space-y-4 pr-1">
-          {messages.length === 0 ? (
-            <div className="text-sm opacity-60">Start the conversation below.</div>
-          ) : (
-            messages.map((m) => (
-              <div key={m.id} className="flex">
-                <div className={m.role === "user" ? "chat-bubble-user ml-auto" : "chat-bubble-bot mr-auto w-full"}>
-                  {m.role === "assistant" ? (
-                    <div className="markdown-body">
-                      <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeRaw, rehypePrism]}>
-                        {m.content}
-                      </ReactMarkdown>
-                    </div>
-                  ) : (
-                    <div>{m.content}</div>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-          {loading && (
-            <div className="flex">
-              <div className="chat-bubble-bot mr-auto">
-                <span className="inline-flex items-center gap-2">
-                  <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-gray-500"></span></span>
-                  Thinking...
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-        <form onSubmit={onSubmit} className="mt-4 flex gap-2">
-          <input
-            className="flex-1 border rounded-xl px-3 py-2 bg-white/90 dark:bg-black/20 border-black/10 dark:border-white/10 focus:outline-none"
-            placeholder={remaining > 0 ? "Type your message..." : "Message limit reached"}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={remaining <= 0 || loading}
-            maxLength={2000}
-            aria-label="Message input"
-          />
-          <button
-            type="submit"
-            disabled={!canSend}
-            className="px-4 py-2 rounded-xl bg-blue-600 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
+    <MobileViewport>
+      <Layout.MainLayout>
+        <Header 
+          title="Fun - Chat"
+          subtitle="Conversational chat app with n8n webhook backend"
+          remainingMessages={remaining}
+          onReset={handleReset}
+          onSettingsClick={openSettings}
+          showBranding={true}
+        />
+        
+        <Layout.ContentArea className="flex flex-col safe-area-bottom bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-blue-900/10">
+          <Layout.Container className="flex-1 flex flex-col h-full max-w-4xl">
+          {/* Chat Messages Area */}
+          <div 
+            ref={listRef} 
+            className="flex-1 overflow-y-auto min-h-0 pb-6 -webkit-overflow-scrolling-touch"
           >
-            {loading ? "Sending..." : "Send"}
-          </button>
-        </form>
-        <p className="mt-2 text-xs opacity-70">You can send up to {MAX_MESSAGES} messages.</p>
-      </main>
-      <footer className="container py-6 text-xs opacity-60">
-        Built with Next.js • Proxied to n8n webhook
-      </footer>
-    </div>
+            <Layout.Stack spacing="md" className="min-h-full py-6">
+              {initialLoading ? (
+                <Layout.Flex 
+                  justify="center" 
+                  align="center" 
+                  className="flex-1 min-h-[300px]"
+                >
+                  <LoadingState
+                    variant="message-skeleton"
+                    messageCount={3}
+                    message="Loading chat..."
+                  />
+                </Layout.Flex>
+              ) : messages.length === 0 ? (
+                <Layout.Flex 
+                  justify="center" 
+                  align="center" 
+                  className="flex-1 min-h-[400px]"
+                >
+                  <div className="text-center max-w-md mx-auto px-6">
+                    <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                      <span className="text-3xl">💬</span>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3 tracking-tight">
+                      Start a conversation
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                      Ask me anything! I&apos;m here to help with your questions and have a friendly chat.
+                    </p>
+                    <div className="mt-8 flex flex-wrap gap-2 justify-center">
+                      <span className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
+                        Ask questions
+                      </span>
+                      <span className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm font-medium">
+                        Get help
+                      </span>
+                      <span className="px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
+                        Have fun
+                      </span>
+                    </div>
+                  </div>
+                </Layout.Flex>
+              ) : (
+                <>
+                  <MessageList
+                    messages={chatMessages}
+                    showActions={true}
+                    onCopy={(messageId) => {
+                      const message = chatMessages.find(m => m.id === messageId);
+                      if (message) {
+                        navigator.clipboard.writeText(message.content);
+                      }
+                    }}
+                    onRegenerate={(messageId) => {
+                      // TODO: Implement regenerate functionality
+                      console.log('Regenerate message:', messageId);
+                    }}
+                    onFeedback={(messageId, type) => {
+                      // TODO: Implement feedback functionality
+                      console.log('Feedback for message:', messageId, type);
+                    }}
+                  />
+                  
+                  {loading && (
+                    <div className="flex justify-start">
+                      <div className="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
+                        <TypingIndicator 
+                          visible={true}
+                          variant="dots"
+                          message="Thinking..."
+                        />
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </Layout.Stack>
+          </div>
+
+          {/* Chat Input Area */}
+          <div className="flex-shrink-0 pt-6 border-t border-gray-200/60 dark:border-gray-700/60 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+            <ChatInput
+              value={input}
+              onChange={setInput}
+              onSubmit={() => {
+                const syntheticEvent = {
+                  preventDefault: () => {},
+                } as React.FormEvent;
+                onSubmit(syntheticEvent);
+              }}
+              disabled={remaining <= 0}
+              loading={loading}
+              placeholder={remaining > 0 ? "Type your message..." : "Message limit reached"}
+              maxLength={2000}
+              remainingMessages={remaining}
+            />
+            
+            <Layout.Flex 
+              justify="between" 
+              align="center" 
+              className="mt-4 text-xs text-gray-500 dark:text-gray-400 font-medium"
+            >
+              <span>You can send up to {MAX_MESSAGES} messages.</span>
+              <span className="hidden sm:inline opacity-75">
+                Built with Next.js • Proxied to n8n webhook
+              </span>
+            </Layout.Flex>
+          </div>
+          </Layout.Container>
+        </Layout.ContentArea>
+      </Layout.MainLayout>
+      
+      {/* Toast notifications */}
+      <AccessibleToastContainer position="top-right" />
+      <ConnectionStatusToast />
+      
+      {/* Settings Modal - Rendered at root level for proper z-index layering */}
+      <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
+    </MobileViewport>
   );
 }
