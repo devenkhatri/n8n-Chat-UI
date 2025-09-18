@@ -11,6 +11,7 @@ import LoadingState from "../components/ui/loading-state";
 import MobileViewport from "../components/ui/mobile-viewport";
 import { AccessibleToastContainer } from "../components/ui/toast-container";
 import { ConnectionStatusToast } from "../components/ui/connection-status";
+import SettingsModal, { useSettingsModal } from "../components/ui/settings-modal";
 
 type ChatMessage = {
   id: string;
@@ -26,6 +27,7 @@ export default function Home() {
   const [remaining, setRemaining] = useState<number>(MAX_MESSAGES);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const { isOpen: isSettingsOpen, openSettings, closeSettings } = useSettingsModal();
 
   const listRef = useRef<HTMLDivElement | null>(null);
 
@@ -121,22 +123,23 @@ export default function Home() {
           subtitle="Conversational chat app with n8n webhook backend"
           remainingMessages={remaining}
           onReset={handleReset}
+          onSettingsClick={openSettings}
           showBranding={true}
         />
         
-        <Layout.ContentArea className="flex flex-col safe-area-bottom">
+        <Layout.ContentArea className="flex flex-col safe-area-bottom bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-blue-900/10">
           <Layout.Container className="flex-1 flex flex-col h-full max-w-4xl">
           {/* Chat Messages Area */}
           <div 
             ref={listRef} 
-            className="flex-1 overflow-y-auto min-h-0 pb-4 -webkit-overflow-scrolling-touch"
+            className="flex-1 overflow-y-auto min-h-0 pb-6 -webkit-overflow-scrolling-touch"
           >
-            <Layout.Stack spacing="md" className="min-h-full">
+            <Layout.Stack spacing="md" className="min-h-full py-6">
               {initialLoading ? (
                 <Layout.Flex 
                   justify="center" 
                   align="center" 
-                  className="flex-1 min-h-[200px]"
+                  className="flex-1 min-h-[300px]"
                 >
                   <LoadingState
                     variant="message-skeleton"
@@ -148,16 +151,29 @@ export default function Home() {
                 <Layout.Flex 
                   justify="center" 
                   align="center" 
-                  className="flex-1 min-h-[200px]"
+                  className="flex-1 min-h-[400px]"
                 >
-                  <div className="text-center">
-                    <div className="text-4xl mb-4">💬</div>
-                    <h2 className="text-lg font-medium text-foreground mb-2">
+                  <div className="text-center max-w-md mx-auto px-6">
+                    <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                      <span className="text-3xl">💬</span>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3 tracking-tight">
                       Start a conversation
                     </h2>
-                    <p className="text-sm text-muted-foreground max-w-md">
+                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                       Ask me anything! I&apos;m here to help with your questions and have a friendly chat.
                     </p>
+                    <div className="mt-8 flex flex-wrap gap-2 justify-center">
+                      <span className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
+                        Ask questions
+                      </span>
+                      <span className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm font-medium">
+                        Get help
+                      </span>
+                      <span className="px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
+                        Have fun
+                      </span>
+                    </div>
                   </div>
                 </Layout.Flex>
               ) : (
@@ -198,7 +214,7 @@ export default function Home() {
           </div>
 
           {/* Chat Input Area */}
-          <div className="flex-shrink-0 pt-4 border-t border-border/50">
+          <div className="flex-shrink-0 pt-6 border-t border-gray-200/60 dark:border-gray-700/60 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
             <ChatInput
               value={input}
               onChange={setInput}
@@ -218,10 +234,10 @@ export default function Home() {
             <Layout.Flex 
               justify="between" 
               align="center" 
-              className="mt-3 text-xs text-muted-foreground"
+              className="mt-4 text-xs text-gray-500 dark:text-gray-400 font-medium"
             >
               <span>You can send up to {MAX_MESSAGES} messages.</span>
-              <span className="hidden sm:inline">
+              <span className="hidden sm:inline opacity-75">
                 Built with Next.js • Proxied to n8n webhook
               </span>
             </Layout.Flex>
@@ -233,6 +249,9 @@ export default function Home() {
       {/* Toast notifications */}
       <AccessibleToastContainer position="top-right" />
       <ConnectionStatusToast />
+      
+      {/* Settings Modal - Rendered at root level for proper z-index layering */}
+      <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
     </MobileViewport>
   );
 }

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { cn } from '../../lib/utils'
-import { useTheme } from '../../hooks/use-theme'
-// import Button from './button' // Unused import
 import SettingsPanel from './settings-panel'
 
 interface SettingsModalProps {
@@ -11,31 +10,26 @@ interface SettingsModalProps {
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, className }) => {
-  const { animationsEnabled } = useTheme()
-  const [isVisible, setIsVisible] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
-  // Handle modal visibility with animation
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Handle modal visibility
   useEffect(() => {
     if (isOpen) {
-      setIsVisible(true)
       // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden'
     } else {
-      // Delay hiding to allow exit animation
-      const timeout = setTimeout(() => {
-        setIsVisible(false)
-      }, animationsEnabled ? 200 : 0)
-      
       // Restore body scroll
       document.body.style.overflow = ''
-      
-      return () => clearTimeout(timeout)
     }
 
     return () => {
       document.body.style.overflow = ''
     }
-  }, [isOpen, animationsEnabled])
+  }, [isOpen])
 
   // Handle escape key
   useEffect(() => {
@@ -45,52 +39,46 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, classNam
       }
     }
 
-    document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
   }, [isOpen, onClose])
 
-  // Don't render if not visible
-  if (!isVisible) return null
+  // Don't render if not mounted or not open
+  if (!mounted || !isOpen) return null
 
-  return (
-    <div
-      className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center p-4",
-        className
-      )}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="settings-title"
-    >
+  const modalContent = (
+    <>
       {/* Backdrop */}
       <div
-        className={cn(
-          "absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity",
-          animationsEnabled && "duration-200",
-          isOpen ? "opacity-100" : "opacity-0"
-        )}
+        className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
-
-      {/* Modal Content */}
+      
+      {/* Modal Container */}
       <div
         className={cn(
-          "relative w-full max-w-4xl max-h-[90vh] bg-background rounded-lg shadow-xl border border-border overflow-hidden",
-          "transition-all",
-          animationsEnabled && "duration-200",
-          isOpen 
-            ? "opacity-100 scale-100 translate-y-0" 
-            : "opacity-0 scale-95 translate-y-4"
+          "fixed inset-0 z-[10000] flex items-start justify-center p-4 pointer-events-none overflow-y-auto",
+          className
         )}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-title"
       >
-        {/* Scrollable Content */}
-        <div className="overflow-y-auto max-h-[90vh] p-6">
-          <SettingsPanel onClose={onClose} />
+        {/* Modal Content */}
+        <div className="relative w-full max-w-4xl min-h-0 my-8 bg-white dark:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 pointer-events-auto">
+          <div className="p-6 bg-white dark:bg-gray-900">
+            <SettingsPanel onClose={onClose} />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
+
+  // Use portal to render modal at document body level
+  return createPortal(modalContent, document.body)
 }
 
 export default SettingsModal

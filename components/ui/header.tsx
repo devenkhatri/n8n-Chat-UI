@@ -6,7 +6,7 @@ import { useIsMobile, hapticFeedback } from '../../lib/utils/mobile'
 import { useBrandingClasses } from '../../hooks/use-branding'
 import Button from './button'
 import ThemeToggle from './theme-toggle'
-import SettingsModal, { useSettingsModal } from './settings-modal'
+import { useSettingsModal } from './settings-modal'
 
 // Icons as simple SVG components
 const SettingsIcon = ({ className }: { className?: string }) => (
@@ -127,19 +127,21 @@ const BrandingLogo: React.FC<{
   )
 }
 
-const Header: React.FC<HeaderProps> = ({ 
+const Header: React.FC<HeaderProps & {
+  onSettingsClick?: () => void
+}> = ({ 
   title, 
   subtitle, 
   actions, 
   showBranding = true, 
   remainingMessages, 
   onReset,
+  onSettingsClick,
   className,
   children 
 }) => {
   const isMobile = useIsMobile()
   const showResetButton = remainingMessages !== undefined && remainingMessages <= 0
-  const { isOpen: isSettingsOpen, openSettings, closeSettings } = useSettingsModal()
   
   const handleResetClick = () => {
     if (isMobile) {
@@ -213,7 +215,7 @@ const Header: React.FC<HeaderProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={openSettings}
+            onClick={onSettingsClick}
             className="h-9 w-9 p-0"
             aria-label="Open settings"
           >
@@ -252,9 +254,6 @@ const Header: React.FC<HeaderProps> = ({
 
       {/* Additional content */}
       {children}
-
-      {/* Settings Modal */}
-      <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
     </header>
   )
 }

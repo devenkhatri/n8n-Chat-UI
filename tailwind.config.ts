@@ -107,75 +107,8 @@ const config: Config = {
         sans: ['var(--font-sans)'],
         mono: ['var(--font-mono)'],
       },
-      fontSize: {
-        xs: ['var(--text-xs)', { lineHeight: 'var(--leading-normal)' }],
-        sm: ['var(--text-sm)', { lineHeight: 'var(--leading-normal)' }],
-        base: ['var(--text-base)', { lineHeight: 'var(--leading-normal)' }],
-        lg: ['var(--text-lg)', { lineHeight: 'var(--leading-normal)' }],
-        xl: ['var(--text-xl)', { lineHeight: 'var(--leading-normal)' }],
-        '2xl': ['var(--text-2xl)', { lineHeight: 'var(--leading-tight)' }],
-        '3xl': ['var(--text-3xl)', { lineHeight: 'var(--leading-tight)' }],
-        '4xl': ['var(--text-4xl)', { lineHeight: 'var(--leading-tight)' }],
-      },
-      spacing: {
-        '0.5': 'var(--space-0-5)',
-        '1.5': 'var(--space-1-5)',
-        '2.5': 'var(--space-2-5)',
-        '3.5': 'var(--space-3-5)',
-        '18': 'var(--space-18)',
-        '22': 'var(--space-22)',
-      },
-      borderRadius: {
-        lg: 'var(--radius-lg)',
-        md: 'var(--radius-md)',
-        sm: 'var(--radius-sm)',
-      },
-      boxShadow: {
-        sm: 'var(--shadow-sm)',
-        DEFAULT: 'var(--shadow-base)',
-        md: 'var(--shadow-md)',
-        lg: 'var(--shadow-lg)',
-        xl: 'var(--shadow-xl)',
-        '2xl': 'var(--shadow-2xl)',
-        inner: 'var(--shadow-inner)',
-      },
-      animation: {
-        'fade-in': 'fadeIn var(--duration-200) var(--ease-out)',
-        'fade-out': 'fadeOut var(--duration-200) var(--ease-in)',
-        'slide-in': 'slideIn var(--duration-300) var(--ease-out)',
-        'slide-out': 'slideOut var(--duration-300) var(--ease-in)',
-        'scale-in': 'scaleIn var(--duration-200) var(--ease-out)',
-        'scale-out': 'scaleOut var(--duration-200) var(--ease-in)',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        fadeOut: {
-          '0%': { opacity: '1' },
-          '100%': { opacity: '0' },
-        },
-        slideIn: {
-          '0%': { transform: 'translateY(10px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
-        slideOut: {
-          '0%': { transform: 'translateY(0)', opacity: '1' },
-          '100%': { transform: 'translateY(-10px)', opacity: '0' },
-        },
-        scaleIn: {
-          '0%': { transform: 'scale(0.95)', opacity: '0' },
-          '100%': { transform: 'scale(1)', opacity: '1' },
-        },
-        scaleOut: {
-          '0%': { transform: 'scale(1)', opacity: '1' },
-          '100%': { transform: 'scale(0.95)', opacity: '0' },
-        },
-      },
     },
   },
-  plugins: [],
 }
 
 export default config

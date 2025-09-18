@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { type BaseComponentProps } from '../../lib/types/ui'
 import { cn } from '../../lib/utils'
 import { useTheme } from '../../hooks/use-theme'
@@ -7,7 +7,7 @@ import Button from './button'
 // Theme icons
 const SunIcon = ({ className }: { className?: string }) => (
   <svg 
-    className={cn("h-4 w-4", className)} 
+    className={cn("h-5 w-5", className)} 
     fill="none" 
     stroke="currentColor" 
     viewBox="0 0 24 24"
@@ -24,7 +24,7 @@ const SunIcon = ({ className }: { className?: string }) => (
 
 const MoonIcon = ({ className }: { className?: string }) => (
   <svg 
-    className={cn("h-4 w-4", className)} 
+    className={cn("h-5 w-5", className)} 
     fill="none" 
     stroke="currentColor" 
     viewBox="0 0 24 24"
@@ -39,82 +39,61 @@ const MoonIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-const MonitorIcon = ({ className }: { className?: string }) => (
-  <svg 
-    className={cn("h-4 w-4", className)} 
-    fill="none" 
-    stroke="currentColor" 
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
-    <path 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      strokeWidth={2} 
-      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" 
-    />
-  </svg>
-)
-
 interface ThemeToggleProps extends BaseComponentProps {
-  variant?: 'toggle' | 'cycle' | 'dropdown'
   showLabel?: boolean
 }
 
 const ThemeToggle: React.FC<ThemeToggleProps> = ({ 
   className, 
   children, 
-  variant = 'toggle',
   showLabel = false 
 }) => {
-  const { 
-    theme, 
-    toggleTheme, 
-    cycleTheme, 
-    getThemeIcon, 
-    getThemeLabel, 
-    mounted,
-    animationsEnabled 
-  } = useTheme()
+  const { theme, resolvedTheme, toggleTheme, mounted } = useTheme()
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Prevent hydration mismatch
-  if (!mounted) {
+  if (!mounted || !isClient) {
     return (
       <div className={className}>
         <Button
           variant="ghost"
           size="sm"
-          className="h-9 w-9 p-0"
+          className="h-10 w-10 p-0 rounded-xl"
           disabled
         >
-          <SunIcon />
+          <div className="h-5 w-5">
+            <SunIcon />
+          </div>
         </Button>
         {children}
       </div>
     )
   }
 
-  const handleClick = variant === 'cycle' ? cycleTheme : toggleTheme
+  const isDark = resolvedTheme === 'dark'
+  const isSystem = theme === 'system'
   
   const getIcon = () => {
-    const iconType = getThemeIcon()
-    switch (iconType) {
-      case 'sun':
-        return <SunIcon />
-      case 'moon':
-        return <MoonIcon />
-      case 'monitor':
-        return <MonitorIcon />
-      default:
-        return <SunIcon />
+    if (isSystem) {
+      // Show system preference icon
+      return isDark ? <MoonIcon /> : <SunIcon />
     }
+    return isDark ? <MoonIcon /> : <SunIcon />
+  }
+
+  const getLabel = () => {
+    if (isSystem) {
+      return `System (${isDark ? 'Dark' : 'Light'})`
+    }
+    return isDark ? 'Dark' : 'Light'
   }
 
   const getAriaLabel = () => {
-    if (variant === 'cycle') {
-      return `Current theme: ${getThemeLabel()}. Click to cycle themes.`
-    }
-    return `Switch to ${theme === 'light' ? 'dark' : 'light'} theme`
+    return `Switch theme. Current: ${getLabel()}`
   }
 
   return (
@@ -122,24 +101,26 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
       <Button
         variant="ghost"
         size="sm"
-        onClick={handleClick}
+        onClick={toggleTheme}
         className={cn(
-          "h-9 p-0 transition-all",
-          showLabel ? "px-3 gap-2" : "w-9",
-          animationsEnabled && "duration-200"
+          "h-10 p-0 transition-all rounded-xl",
+          "hover:bg-gray-100 dark:hover:bg-gray-800",
+          "border border-transparent hover:border-gray-200 dark:hover:border-gray-700",
+          showLabel ? "px-4 gap-2" : "w-10"
         )}
         aria-label={getAriaLabel()}
-        title={getThemeLabel()}
+        title={getLabel()}
       >
-        <span className={cn(
-          "transition-transform",
-          animationsEnabled && "duration-200"
+        <div className={cn(
+          "h-5 w-5 transition-all",
+          "text-gray-600 dark:text-gray-400",
+          "hover:text-gray-900 dark:hover:text-gray-100"
         )}>
           {getIcon()}
-        </span>
+        </div>
         {showLabel && (
-          <span className="text-sm font-medium">
-            {getThemeLabel()}
+          <span className="text-sm font-semibold">
+            {getLabel()}
           </span>
         )}
       </Button>

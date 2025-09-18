@@ -4,11 +4,10 @@ import { cn } from '../../lib/utils'
 import { useIsMobile, useKeyboardOpen, preventZoomOnFocus, hapticFeedback } from '../../lib/utils/mobile'
 import Button from './button'
 
-// Send icon component
+// Send icon component - Modern paper plane style
 const SendIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-full h-full">
-    <path d="m22 2-7 20-4-9-9-4Z"/>
-    <path d="M22 2 11 13"/>
+  <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
   </svg>
 )
 
@@ -375,16 +374,18 @@ const ChatInput: React.FC<ChatInputProps> = ({
       
       <form onSubmit={handleSubmit} className="relative" role="form" aria-label="Send message form">
         <div className={cn(
-          "relative flex items-end gap-2 rounded-lg border transition-all duration-200",
-          "bg-background hover:bg-muted/30",
+          "relative flex items-end gap-3 rounded-2xl border transition-all duration-200",
+          "bg-white dark:bg-gray-800 shadow-sm",
+          "hover:shadow-md hover:bg-gray-50/50 dark:hover:bg-gray-700/50",
           // Mobile-optimized padding and spacing
-          isMobile ? "p-3 gap-3" : "p-3 gap-2",
+          isMobile ? "p-4 gap-4" : "p-4 gap-3",
           // Keyboard-aware styling on mobile
           isMobile && isKeyboardOpen && "mb-2",
-          currentError ? "border-destructive ring-2 ring-destructive/20" :
-          isFocused ? "border-ring ring-2 ring-ring/20" : "border-input",
-          (disabled || rateLimited) && "opacity-50 cursor-not-allowed bg-muted/50",
-          "focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20"
+          currentError ? "border-red-300 dark:border-red-700 ring-2 ring-red-500/20 shadow-red-500/10" :
+          isFocused ? "border-blue-300 dark:border-blue-600 ring-2 ring-blue-500/20 shadow-blue-500/10" : 
+          "border-gray-200 dark:border-gray-700",
+          (disabled || rateLimited) && "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800",
+          "focus-within:border-blue-300 dark:focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:shadow-blue-500/10"
         )}>
           {/* Main textarea */}
           <div className="flex-1 relative">
@@ -411,9 +412,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 "w-full resize-none border-0 bg-transparent p-0",
                 // Mobile-optimized text size
                 isMobile ? "text-base" : "text-sm", // 16px on mobile to prevent zoom
-                "placeholder:text-muted-foreground",
+                "placeholder:text-gray-500 dark:placeholder:text-gray-400",
+                "text-gray-900 dark:text-gray-100",
                 "focus:outline-none focus:ring-0",
-                "scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent",
+                "scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent",
                 disabled && "cursor-not-allowed",
                 // Mobile-specific touch optimizations
                 isMobile && "touch-manipulation"
@@ -451,10 +453,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
               size="sm"
               onClick={onRetry}
               disabled={loading || rateLimited}
-              icon={<RetryIcon />}
-              className="flex-shrink-0 h-8 w-8 p-0"
+              className="flex-shrink-0 h-10 w-10 p-0 rounded-xl"
               aria-label="Retry sending message"
-            />
+            >
+              <RetryIcon />
+            </Button>
           ) : (
             <Button
               type="submit"
@@ -462,10 +465,20 @@ const ChatInput: React.FC<ChatInputProps> = ({
               size="sm"
               disabled={isSubmitDisabled}
               loading={loading}
-              icon={!loading ? <SendIcon /> : undefined}
-              className="flex-shrink-0 h-8 w-8 p-0"
+              className={cn(
+                "flex-shrink-0 h-10 w-10 p-0 rounded-xl",
+                "shadow-lg shadow-blue-500/25 dark:shadow-blue-400/20",
+                "hover:shadow-xl hover:shadow-blue-500/30 dark:hover:shadow-blue-400/25",
+                "disabled:shadow-sm disabled:shadow-gray-500/10"
+              )}
               aria-label="Send message"
-            />
+            >
+              {!loading && (
+                <div className="h-5 w-5">
+                  <SendIcon />
+                </div>
+              )}
+            </Button>
           )}
         </div>
         

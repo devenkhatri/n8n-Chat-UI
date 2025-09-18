@@ -1,10 +1,45 @@
 import React, { useState, useEffect } from 'react'
 import { type BrandingConfig } from '../../lib/types/theme'
-import { validateBrandingConfig, previewBranding } from '../../lib/utils/branding'
 import { cn } from '../../lib/utils'
 import Button from './button'
 import Input from './input'
 import Card from './card'
+
+// Simple validation function
+const validateBrandingConfig = (branding: Partial<BrandingConfig>) => {
+  const errors: string[] = []
+  const hexColorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
+
+  if (branding.primaryColor && !hexColorRegex.test(branding.primaryColor)) {
+    errors.push('Primary color must be a valid hex color')
+  }
+  if (branding.secondaryColor && !hexColorRegex.test(branding.secondaryColor)) {
+    errors.push('Secondary color must be a valid hex color')
+  }
+  if (branding.appName && (branding.appName.length < 1 || branding.appName.length > 50)) {
+    errors.push('App name must be between 1 and 50 characters')
+  }
+
+  return { isValid: errors.length === 0, errors }
+}
+
+// Simple preview function
+const previewBranding = (branding: Partial<BrandingConfig>) => {
+  const cssVariables: Record<string, string> = {}
+  
+  if (branding.primaryColor) {
+    cssVariables['--color-primary'] = branding.primaryColor
+    cssVariables['--color-primary-500'] = branding.primaryColor
+  }
+  if (branding.secondaryColor) {
+    cssVariables['--color-secondary'] = branding.secondaryColor
+  }
+  if (branding.fontFamily) {
+    cssVariables['--font-family'] = branding.fontFamily
+  }
+
+  return { cssVariables, validation: validateBrandingConfig(branding) }
+}
 
 interface BrandingPreviewProps {
   branding: Partial<BrandingConfig>

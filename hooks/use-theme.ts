@@ -1,6 +1,6 @@
 'use client'
 
-import { useTheme as useThemeContext } from '../providers/theme-provider'
+import { useThemeContext } from '../providers/theme-provider'
 import { useCallback, useEffect, useState } from 'react'
 import { type ThemeMode } from '../lib/types/theme'
 

@@ -15,8 +15,13 @@ export function useBranding() {
 
   try {
     const theme = useTheme()
-    branding = theme.branding as BrandingConfig & { logo?: string }
-    updateBranding = theme.updateBranding as (changes: Partial<BrandingConfig & { logo?: string }>) => void
+    branding = (theme.branding || {
+      appName: 'Chat UI',
+      primaryColor: '#3b82f6',
+      secondaryColor: '#64748b',
+      fontFamily: 'Inter',
+    }) as BrandingConfig & { logo?: string }
+    updateBranding = theme.updateBranding || (() => {})
   } catch {
     branding = {
       appName: 'Chat UI',
